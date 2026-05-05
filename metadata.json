@@ -1,0 +1,6 @@
+{
+  "name": "Pre-Order UMKM Backend (FastAPI)",
+  "description": "Sistem backend Python FastAPI untuk Pre-Order Makanan UMKM Kampus dengan arsitektur 3-layer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

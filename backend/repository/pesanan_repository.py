@@ -1,0 +1,71 @@
+from sqlalchemy.orm import Session
+from uuid import UUID
+from backend.domain import models, schemas
+from backend.repository.menu_repository import MenuRepository
+
+class PesananRepository:
+    def __init__(self):
+        self.menu_repo = MenuRepository()
+
+    def save(self, db: Session, pesanan: schemas.PesananCreate):
+        total_harga = 0.0
+        db_items = []
+        
+        for item in pesanan.items:
+            menu = self.menu_repo.find_by_id(db, item.id_menu)
+            if not menu:
+                raise ValueError(f"Menu dengan ID {item.id_menu} tidak ditemukan")
+            
+            if menu.stok < item.jumlah:
+                raise ValueError(f"Stock tidak cukup untuk menu {menu.nama_menu}")
+                
+            self.menu_repo.update_stock(db, menu.id_menu, -item.jumlah)
+            
+            harga_satuan = menu.harga
+            subtotal = harga_satuan * item.jumlah
+            total_harga += subtotal
+            
+            db_item = models.DetailPesanan(
+                id_menu=item.id_menu,
+                jumlah=item.jumlah,
+                harga_satuan=harga_satuan,
+                subtotal=subtotal
+            )
+            db_items.append(db_item)
+
+        db_pesanan = models.Pesanan(
+            id_mahasiswa=pesanan.id_mahasiswa,
+            id_umkm=pesanan.id_umkm,
+            total_harga=total_harga,
+            status_pesanan="PENDING"
+        )
+        
+        db.add(db_pesanan)
+        db.commit()
+        db.refresh(db_pesanan)
+        
+        for db_item in db_items:
+            db_item.id_pesanan = db_pesanan.id_pesanan
+            db.add(db_item)
+            
+        db.commit()
+        db.refresh(db_pesanan)
+        
+        return db_pesanan
+
+    def find_by_id(self, db: Session, pesanan_id: UUID):
+        return db.query(models.Pesanan).filter(models.Pesanan.id_pesanan == pesanan_id).first()
+        
+    def get_pesanan_by_umkm(self, db: Session, umkm_id: UUID):
+        return db.query(models.Pesanan).filter(models.Pesanan.id_umkm == umkm_id).all()
+
+    def get_pesanan_by_mahasiswa(self, db: Session, mahasiswa_id: UUID):
+        return db.query(models.Pesanan).filter(models.Pesanan.id_mahasiswa == mahasiswa_id).all()
+        
+    def update_status(self, db: Session, pesanan_id: UUID, status: str):
+        pesanan = self.find_by_id(db, pesanan_id)
+        if pesanan:
+            pesanan.status_pesanan = status
+            db.commit()
+            db.refresh(pesanan)
+        return pesanan
