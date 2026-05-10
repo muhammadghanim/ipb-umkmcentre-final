@@ -2,10 +2,12 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from backend.domain import models, schemas
 from backend.repository.menu_repository import MenuRepository
+from backend.repository.promo_repository import PromoRepository
 
 class PesananRepository:
     def __init__(self):
         self.menu_repo = MenuRepository()
+        self.promo_repo = PromoRepository()
 
     def save(self, db: Session, pesanan: schemas.PesananCreate):
         total_harga = 0.0
@@ -33,11 +35,23 @@ class PesananRepository:
             )
             db_items.append(db_item)
 
+        if pesanan.kode_promo:
+            is_valid, msg, diskon = self.promo_repo.validasiMasaBerlaku(db, pesanan.kode_promo)
+            if is_valid:
+                total_harga -= diskon
+                if total_harga < 0: 
+                    total_harga = 0
+            else:
+                raise ValueError(f"Promo Gagal: {msg}")
+
+        total_harga += 2000
+
         db_pesanan = models.Pesanan(
             id_mahasiswa=pesanan.id_mahasiswa,
             id_umkm=pesanan.id_umkm,
             total_harga=total_harga,
-            status_pesanan="PENDING"
+            status_pesanan="PENDING",
+            catatan=pesanan.catatan # Merekam catatan
         )
         
         db.add(db_pesanan)
@@ -65,7 +79,7 @@ class PesananRepository:
     def update_status(self, db: Session, pesanan_id: UUID, status: str):
         pesanan = self.find_by_id(db, pesanan_id)
         if pesanan:
-            pesanan.status_pesanan = status
+            pesanan.status_pesanan = status.upper()
             db.commit()
             db.refresh(pesanan)
         return pesanan

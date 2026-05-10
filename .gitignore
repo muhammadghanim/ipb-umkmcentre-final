@@ -1,8 +1,17 @@
+# Node / React Frontend
 node_modules/
 build/
 dist/
 coverage/
 .DS_Store
 *.log
+
+# Environments (SANGAT PENTING: Mencegah .env terupload)
 .env*
 !.env.example
+
+# Python / FastAPI Backend
+__pycache__/
+venv/
+env/
+*.pyc

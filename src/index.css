@@ -1,15 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand-green: #065F38;
-  --color-brand-green-dark: #044327;
-  --color-brand-orange: #9A4B06;
-  --color-brand-orange-dark: #7d3c05;
-  --color-brand-bg: #F8F9FB;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-ipb-green: #004d28; /* Warna hijau khas */
+  --color-ipb-accent: #d97706; /* Warna amber/orange untuk CTA */
 }
 
 body {
-  @apply bg-brand-bg text-slate-800 antialiased;
+  background-color: #f9fafb;
 }

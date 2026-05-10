@@ -29,3 +29,8 @@ def validasi_promo(kode_promo: str, db: Session = Depends(get_db)):
     if not is_valid:
         raise HTTPException(status_code=400, detail=message)
     return {"is_valid": True, "message": message, "nominal_diskon": diskon}
+
+@router.get("/umkm/{umkm_id}", response_model=list[schemas.PromoResponse])
+def get_promo_umkm(umkm_id: UUID, db: Session = Depends(get_db)):
+    from backend.domain import models
+    return db.query(models.Promo).filter(models.Promo.id_umkm == umkm_id).all()

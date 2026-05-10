@@ -3,6 +3,10 @@ from uuid import UUID
 from backend.domain import models, schemas
 
 class MenuRepository:
+    def get_all_menus(self, db: Session):
+        # Mengambil semua menu dari semua UMKM yang sedang tersedia
+        return db.query(models.Menu).filter(models.Menu.is_available == True).all()
+    
     def find_by_id(self, db: Session, menu_id: UUID):
         return db.query(models.Menu).filter(models.Menu.id_menu == menu_id).first()
 

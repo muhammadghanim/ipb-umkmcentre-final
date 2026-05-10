@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
-from backend.domain import schemas
+from backend.domain import schemas, models
 from backend.repository.pesanan_repository import PesananRepository
 from backend.database import get_db
 
@@ -36,4 +36,26 @@ def update_pesanan_status(pesanan_id: UUID, status: str, db: Session = Depends(g
     pesanan = pesanan_repo.update_status(db=db, pesanan_id=pesanan_id, status=status)
     if not pesanan:
         raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
+    return pesanan
+
+@router.patch("/{pesanan_id}/upload-bukti", response_model=schemas.PesananResponse)
+def upload_bukti_pembayaran(pesanan_id: UUID, req: schemas.UploadBuktiRequest, db: Session = Depends(get_db)):
+    pesanan = pesanan_repo.find_by_id(db, pesanan_id)
+    if not pesanan:
+        raise HTTPException(status_code=404, detail="Pesanan tidak ditemukan")
+    
+    # Update status pesanan
+    pesanan.status_pesanan = "MENUNGGU VERIFIKASI"
+    
+    # Cari atau buat record pembayaran
+    pembayaran = db.query(models.Pembayaran).filter(models.Pembayaran.id_pesanan == pesanan_id).first()
+    if not pembayaran:
+        pembayaran = models.Pembayaran(id_pesanan=pesanan_id, total_tagihan=pesanan.total_harga)
+        db.add(pembayaran)
+        
+    pembayaran.bukti_bayar_url = req.bukti_bayar_url
+    pembayaran.status_bayar = "MENUNGGU VERIFIKASI"
+    db.commit()
+    db.refresh(pesanan)
+    
     return pesanan

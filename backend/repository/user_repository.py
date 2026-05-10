@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from uuid import UUID
 from backend.domain import models, schemas
+from backend.core.security import get_password_hash
 
 class UserRepository:
     def get_mahasiswa(self, db: Session, user_id: UUID):
@@ -16,7 +17,8 @@ class UserRepository:
             nim=mhs.nim,
             nama_lengkap=mhs.nama_lengkap,
             no_whatsapp=mhs.no_whatsapp,
-            role="mahasiswa"
+            role="mahasiswa",
+            hashed_password=get_password_hash(mhs.password)
         )
         db.add(db_mhs)
         db.commit()
@@ -25,11 +27,12 @@ class UserRepository:
 
     def create_umkm(self, db: Session, umkm: schemas.UMKMCreate):
         db_umkm = models.UMKM(
-            username=umkm.username,
-            email=umkm.email,
+            username=umkm.username, 
+            email=umkm.email, 
             nama_toko=umkm.nama_toko,
-            deskripsi=umkm.deskripsi,
-            role="umkm"
+            deskripsi=umkm.deskripsi, 
+            role="umkm",
+            hashed_password=get_password_hash(umkm.password) # <--- Ubah mhs jadi umkm di sini
         )
         db.add(db_umkm)
         db.commit()
