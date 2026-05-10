@@ -2,19 +2,53 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# 🍃 IPB Food Hub - Pre-Order Makanan UMKM
 
-This contains everything you need to run your app locally.
+Sistem manajemen *pre-order* makanan untuk menghubungkan mahasiswa IPB dengan UMKM/Kantin kampus. Aplikasi ini dibangun menggunakan arsitektur *Fullstack* modern.
 
-View your app in AI Studio: https://ai.studio/apps/1945556f-3244-4f9d-a5eb-6f78cfe59ca2
+* **Frontend:** React, TypeScript, Vite, Tailwind CSS
+* **Backend:** Python, FastAPI, SQLAlchemy
+* **Database:** PostgreSQL (Cloud via Supabase)
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## ⚙️ Prasyarat
+Sebelum menjalankan project ini di lokal, pastikan laptop kamu sudah terinstall:
+- [Node.js](https://nodejs.org/) (v16 atau lebih baru)
+- [Python](https://www.python.org/downloads/) (v3.9 atau lebih baru)
+- [Git](https://git-scm.com/)
 
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🚀 Cara Menjalankan Project Secara Lokal
+
+### 1. Clone Repository & Setup Environment Variable
+Pertama, *clone* repository ini ke lokal kamu dan masuk ke dalam foldernya.
+
+```bash
+git clone [https://github.com/bianglalametro/IPB-UMKMcentre.git](https://github.com/bianglalametro/IPB-UMKMcentre.git)
+cd IPB-UMKMcentre
+
+## Cara Menjalankan Secara Lokal (backend)
+1. **Buka terminal dan arahkan ke root folder.**
+2. **Buat Virtual Environment (Opsional namun direkomendasikan):**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate # (Untuk Mac/Linux)
+   venv\\Scripts\\activate    # (Untuk Windows)
+   ```
+3. **Install Dependensi:**
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+4. **Jalankan Server FastAPI:**
+   ```bash
+   uvicorn backend.main:app --reload
+   ```
+5. **Akses API Documentation:**
+   Buka browser dan navigasi ke: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+## Cara Menjalankan Secara Lokal (frontend)
+1. npm install
+2. npm run dev
+
