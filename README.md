@@ -88,4 +88,4 @@ npm run dev
 
 ## 👥 Kontributor
 Dibuat dengan ❤️ untuk mahasiswa IPB University.
-* **Sistem Informasi / Ilmu Komputer IPB** - *Capstone Project 2026*
+* **Ilmu Komputer IPB** - *Analisis Desain Sistem Project 2026*
