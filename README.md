@@ -1,52 +1,91 @@
-
-
 # 🍃 IPB Food Hub - Pre-Order Makanan UMKM
 
-Sistem manajemen *pre-order* makanan untuk menghubungkan mahasiswa IPB dengan UMKM/Kantin kampus. Aplikasi ini dibangun menggunakan arsitektur *Fullstack* modern.
+**IPB Food Hub** adalah sebuah sistem manajemen *pre-order* makanan inovatif yang dirancang khusus untuk menghubungkan mahasiswa IPB University dengan UMKM dan kantin di sekitar ekosistem kampus. 
 
-* **Frontend:** React, TypeScript, Vite, Tailwind CSS
+Aplikasi ini bertujuan untuk mengurai antrean panjang di kantin pada jam makan siang dan mendigitalisasi pengelolaan inventori bagi para mitra UMKM lokal.
+
+---
+
+## ✨ Fitur Utama
+* **🛒 Smart Cart & Checkout:** Mahasiswa dapat memesan makanan dari berbagai kantin dalam satu platform.
+* **🏷️ Kupon & Flash Sale:** Dukungan sistem diskon dan *flash sale* cerdas berdasarkan jam makan siang.
+* **📦 Seller Dashboard:** Panel khusus UMKM untuk memantau pesanan masuk secara *real-time*.
+* **📊 Inventory Management:** Manajemen stok produk dan SKU yang mudah digunakan oleh penjual.
+* **🔍 Semantic Search & Filter:** Pencarian cerdas untuk mempermudah mahasiswa menemukan menu favorit.
+
+---
+
+## 🛠️ Tech Stack
+Aplikasi ini dibangun menggunakan arsitektur *Fullstack* modern untuk memastikan performa yang cepat dan skalabilitas tinggi.
+* **Frontend:** React, TypeScript, Vite, Tailwind CSS, Lucide Icons
 * **Backend:** Python, FastAPI, SQLAlchemy
-* **Database:** PostgreSQL (Cloud via Supabase)
+* **Database:** PostgreSQL (Cloud deployment via Supabase)
 
 ---
 
 ## ⚙️ Prasyarat
-Sebelum menjalankan project ini di lokal, pastikan laptop kamu sudah terinstall:
-- [Node.js](https://nodejs.org/) (v16 atau lebih baru)
-- [Python](https://www.python.org/downloads/) (v3.9 atau lebih baru)
+Sebelum menjalankan project ini di komputermu, pastikan kamu sudah menginstal perangkat lunak berikut:
+- [Node.js](https://nodejs.org/) (Versi 16 atau lebih baru)
+- [Python](https://www.python.org/downloads/) (Versi 3.9 atau lebih baru)
 - [Git](https://git-scm.com/)
 
 ---
 
-## 🚀 Cara Menjalankan Project Secara Lokal
+## 🚀 Panduan Instalasi Lokal
 
-### 1. Clone Repository & Setup Environment Variable
-Pertama, *clone* repository ini ke lokal kamu dan masuk ke dalam foldernya.
-
+### 1. Clone Repository
+Langkah pertama, *clone* repositori ini ke komputer lokal kamu:
 ```bash
 git clone [https://github.com/bianglalametro/IPB-UMKMcentre.git](https://github.com/bianglalametro/IPB-UMKMcentre.git)
 cd IPB-UMKMcentre
+```
 
-## Cara Menjalankan Secara Lokal (backend)
-1. **Buka terminal dan arahkan ke root folder.**
-2. **Buat Virtual Environment (Opsional namun direkomendasikan):**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate # (Untuk Mac/Linux)
-   venv\\Scripts\\activate    # (Untuk Windows)
-   ```
-3. **Install Dependensi:**
-   ```bash
-   pip install -r backend/requirements.txt
-   ```
-4. **Jalankan Server FastAPI:**
-   ```bash
-   uvicorn backend.main:app --reload
-   ```
-5. **Akses API Documentation:**
-   Buka browser dan navigasi ke: [http://localhost:8000/docs](http://localhost:8000/docs)
+### 2. Setup Database & Environment Variables (.env)
+Karena aplikasi ini menggunakan Supabase, kamu perlu mengatur variabel *environment*.
+1. Buat file bernama `.env` di dalam folder `backend/`.
+2. Isi dengan kredensial database Supabase milikmu (hubungi administrator repositori jika kamu tidak memiliki aksesnya).
 
-## Cara Menjalankan Secara Lokal (frontend)
-1. npm install
-2. npm run dev
+### 3. Menjalankan Backend (FastAPI)
+Buka terminal baru untuk menjalankan *server* Python.
+```bash
+# Masuk ke folder backend
+cd backend
 
+# Buat Virtual Environment (Sangat direkomendasikan)
+python -m venv venv
+
+# Aktifkan Virtual Environment
+# Untuk Mac/Linux:
+source venv/bin/activate 
+# Untuk Windows:
+venv\Scripts\activate
+
+# Install semua dependensi
+pip install -r requirements.txt
+
+# Jalankan Server FastAPI
+uvicorn main:app --reload
+```
+*Server API sekarang berjalan di `http://localhost:8000`.*
+*Cek Dokumentasi API interaktif di: `http://localhost:8000/docs`*
+
+### 4. Menjalankan Frontend (React/Vite)
+Buka tab terminal baru (biarkan terminal backend tetap berjalan).
+```bash
+# Masuk ke folder frontend (jika kodemu ada di dalam folder terpisah, misal 'frontend')
+# Jika frontend berada di root folder, lewati langkah 'cd' ini.
+# cd frontend 
+
+# Install dependensi Node.js
+npm install
+
+# Jalankan server development Vite
+npm run dev
+```
+*Aplikasi frontend sekarang dapat diakses melalui browser di `http://localhost:3000` (atau port yang diberikan oleh Vite).*
+
+---
+
+## 👥 Kontributor
+Dibuat dengan ❤️ untuk mahasiswa IPB University.
+* **Sistem Informasi / Ilmu Komputer IPB** - *Capstone Project 2026*
