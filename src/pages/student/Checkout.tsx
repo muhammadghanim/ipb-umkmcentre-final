@@ -89,12 +89,16 @@ export default function Checkout() {
         </div>
       </div>
 
+      {/* JUDUL DIKELUARKAN DARI GRID AGAR KOTAK BAWAH SEJAJAR */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-extrabold text-slate-900">Hampir Selesai!</h1>
+      </div>
+
+      {/* Grid Utama */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Kolom Kiri: Form Informasi */}
-        <div className="lg:col-span-2 space-y-6">
-          <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Hampir Selesai!</h1>
-
+        <div className="lg:col-span-2">
           <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-8">
             
             {/* Input Catatan */}

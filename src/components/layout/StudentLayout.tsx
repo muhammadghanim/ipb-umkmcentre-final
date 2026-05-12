@@ -1,6 +1,10 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, ShoppingCart, User, Leaf, ClipboardList, LogOut, Settings } from 'lucide-react';
+import { Search, ShoppingCart, User, Utensils, ClipboardList, LogOut, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
+
+// 1. TAMBAHKAN IMPORT FOOTER DI SINI
+// (Catatan: Ubah menjadi './Footer' jika Footer.tsx berada di dalam folder yang sama dengan layout ini)
+import Footer from './Footer';
 
 export default function StudentLayout() {
   const navigate = useNavigate();
@@ -8,7 +12,7 @@ export default function StudentLayout() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState(''); // State untuk teks pencarian
+  const [searchQuery, setSearchQuery] = useState(''); 
 
   const studentId = localStorage.getItem('STUDENT_ID');
 
@@ -32,7 +36,6 @@ export default function StudentLayout() {
     navigate('/login');
   };
 
-  // Fungsi untuk menangani pencarian saat tombol Enter ditekan
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       if (searchQuery.trim()) {
@@ -50,12 +53,11 @@ export default function StudentLayout() {
           
           <Link to="/" className="flex items-center gap-2 group">
             <div className="bg-[#0f7636]/10 p-1.5 rounded-lg group-hover:bg-[#0f7636]/20 transition-colors">
-              <Leaf className="h-6 w-6 text-[#0f7636]" />
+              <Utensils className="h-6 w-6 text-[#0f7636]" />
             </div>
             <span className="font-bold text-xl text-[#0f7636] tracking-tight hidden sm:block">IPB Food Hub</span>
           </Link>
 
-          {/* Search Bar Interactive */}
           <div className="flex-1 max-w-xl mx-4 sm:mx-8 relative">
             <div className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-300 ${isSearchFocused ? 'text-[#0f7636]' : 'text-slate-400'}`}>
               <Search className="w-5 h-5" />
@@ -126,6 +128,9 @@ export default function StudentLayout() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Outlet />
       </main>
+
+      {/* 2. TAG FOOTER DITAMBAHKAN DI SINI, DI BAWAH MAIN */}
+      <Footer />
     </div>
   );
 }

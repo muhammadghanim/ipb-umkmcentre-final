@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Phone, Leaf, ArrowRight, CreditCard, Store, FileText } from 'lucide-react';
+import { Mail, Lock, User, Phone, Utensils, ArrowRight, CreditCard, Store, FileText } from 'lucide-react';
 import api from '../../services/api';
 
 export default function RegisterPage() {
@@ -72,8 +72,8 @@ export default function RegisterPage() {
         {/* PERUBAHAN DI SINI: justify-center dan h-full */}
         <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16 w-full h-full">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white px-4 py-2 rounded-full w-fit mb-6 shadow-lg">
-            <Leaf className="w-4 h-4" />
-            <span className="text-sm font-bold tracking-widest uppercase">IPB Ecosystem</span>
+            <Utensils className="w-4 h-4" />
+            <span className="text-sm font-bold tracking-widest uppercase">IPB Food Hub</span>
           </div>
           <h1 className="text-5xl font-black text-white leading-tight mb-4 drop-shadow-lg tracking-tight">
             Join the Food <br/>Revolution.
@@ -90,7 +90,7 @@ export default function RegisterPage() {
           
           <div className="text-center lg:text-left">
             <Link to="/" className="inline-flex items-center justify-center lg:justify-start gap-2 text-[#0f7636] font-extrabold text-2xl mb-8 lg:hidden">
-              <Leaf className="w-6 h-6" /> IPB Food Hub
+              <Utensils className="w-6 h-6" /> IPB Food Hub
             </Link>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-2 tracking-tight">Create your Account</h2>
             <p className="text-slate-500 font-medium">Pilih jenis akun dan lengkapi data dirimu.</p>

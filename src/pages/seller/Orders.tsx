@@ -8,6 +8,9 @@ export default function SellerOrders() {
 
   const [showProofModal, setShowProofModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  
+  // 1. STATE UNTUK PENCARIAN
+  const [searchQuery, setSearchQuery] = useState('');
 
   const UMKM_ID = localStorage.getItem('UMKM_ID'); 
 
@@ -63,6 +66,24 @@ export default function SellerOrders() {
         return 'bg-gray-100 text-gray-600 border-gray-200';
     }
   };
+
+  // 2. LOGIKA PENCARIAN (FILTER)
+  const filteredOrders = orders.filter(order => {
+    const query = searchQuery.toLowerCase();
+    
+    // Pencarian berdasarkan Invoice ID
+    const invoiceMatch = order.id_pesanan?.toLowerCase().includes(query);
+    
+    // Pencarian berdasarkan Catatan pembeli
+    const catatanMatch = order.catatan?.toLowerCase().includes(query);
+    
+    // Pencarian berdasarkan Nama Menu di dalam detail pesanan (jika ada)
+    const menuMatch = order.detail_pesanan?.some((item: any) => 
+      item.nama_menu?.toLowerCase().includes(query)
+    );
+
+    return invoiceMatch || catatanMatch || menuMatch;
+  });
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-10">
@@ -129,7 +150,13 @@ export default function SellerOrders() {
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-[#0f7636] transition-colors" />
-          <input type="text" placeholder="Cari nomor invoice atau nama menu..." className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none transition-all shadow-sm font-medium" />
+          <input 
+            type="text" 
+            placeholder="Cari nomor invoice atau nama menu..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none transition-all shadow-sm font-medium" 
+          />
         </div>
         <button className="px-6 py-4 bg-white border border-slate-200 rounded-2xl text-slate-700 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
           <Filter className="w-5 h-5" /> Filter Status
@@ -165,8 +192,18 @@ export default function SellerOrders() {
                     <p className="text-slate-500">Pesanan dari mahasiswa akan muncul di sini.</p>
                   </td>
                 </tr>
+              ) : filteredOrders.length === 0 ? (
+                // 3. TAMPILAN JIKA HASIL PENCARIAN KOSONG
+                <tr>
+                  <td colSpan={5} className="p-16 text-center">
+                    <Search className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-slate-700 mb-1">Pesanan tidak ditemukan</h3>
+                    <p className="text-slate-500">Tidak ada invoice atau catatan yang cocok dengan "{searchQuery}".</p>
+                  </td>
+                </tr>
               ) : (
-                orders.map((order) => (
+                // 4. MENGGUNAKAN filteredOrders BUKAN orders
+                filteredOrders.map((order) => (
                   <tr key={order.id_pesanan} className="hover:bg-slate-50/80 transition-colors">
                     
                     {/* Invoice & Waktu */}

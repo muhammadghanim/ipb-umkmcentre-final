@@ -16,6 +16,9 @@ export default function Inventory() {
     deskripsi: ''
   });
 
+  // State khusus untuk pencarian
+  const [searchQuery, setSearchQuery] = useState('');
+
   // State khusus untuk file gambar dan preview
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
@@ -44,7 +47,6 @@ export default function Inventory() {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      // Membuat URL sementara untuk menampilkan preview gambar
       setPreviewUrl(URL.createObjectURL(file)); 
     }
   };
@@ -79,6 +81,14 @@ export default function Inventory() {
       alert("Gagal menambahkan produk. Cek console log.");
     }
   };
+
+  // LOGIKA PENCARIAN (FILTER)
+  const filteredMenus = menus.filter(item => {
+    const query = searchQuery.toLowerCase();
+    const namaMatch = item.nama_menu?.toLowerCase().includes(query);
+    const skuMatch = item.id_menu?.toLowerCase().includes(query);
+    return namaMatch || skuMatch;
+  });
 
   return (
     <div className="space-y-8 relative pb-10">
@@ -195,7 +205,13 @@ export default function Inventory() {
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-[#0f7636] transition-colors" />
-          <input type="text" placeholder="Cari nama produk atau SKU..." className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none transition-all shadow-sm font-medium" />
+          <input 
+            type="text" 
+            placeholder="Cari nama produk atau SKU..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none transition-all shadow-sm font-medium" 
+          />
         </div>
         <button className="px-6 py-4 bg-white border border-slate-200 rounded-2xl text-slate-700 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
           <Filter className="w-5 h-5" /> Filter Data
@@ -235,7 +251,19 @@ export default function Inventory() {
                 </tr>
               )}
 
-              {menus.map((item) => (
+              {/* Tampilan jika pencarian tidak menemukan hasil */}
+              {!isLoading && menus.length > 0 && filteredMenus.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-16 text-center">
+                    <Search className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-slate-700 mb-1">Produk tidak ditemukan</h3>
+                    <p className="text-slate-500">Tidak ada produk atau SKU yang cocok dengan pencarian "{searchQuery}".</p>
+                  </td>
+                </tr>
+              )}
+
+              {/* Looping menggunakan filteredMenus, bukan menus */}
+              {filteredMenus.map((item) => (
                 <tr key={item.id_menu} className="hover:bg-slate-50/80 transition-colors group">
                   <td className="p-4 sm:p-6">
                     <div className="flex items-center gap-4">

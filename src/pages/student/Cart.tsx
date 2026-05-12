@@ -44,16 +44,19 @@ export default function Cart() {
         </div>
       </div>
 
+      {/* JUDUL DIKELUARKAN DARI GRID AGAR KOTAK BAWAH SEJAJAR */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-extrabold text-slate-900">Keranjang Belanja</h2>
+        <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-bold">
+          {cartItems.length} Item
+        </span>
+      </div>
+
+      {/* Grid Utama */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Kolom Kiri: Daftar Keranjang */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-extrabold text-slate-900">Keranjang Belanja</h2>
-            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-bold">
-              {cartItems.length} Item
-            </span>
-          </div>
           
           {cartItems.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-[2rem] border border-dashed border-slate-300 shadow-sm">

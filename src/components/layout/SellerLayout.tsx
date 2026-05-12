@@ -2,6 +2,8 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingBag, Settings, LogOut, ChevronRight, Star, Ticket } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+// 1. TAMBAHKAN IMPORT FOOTER
+import Footer from './Footer'; 
 
 export default function SellerLayout() {
   const location = useLocation();
@@ -29,10 +31,11 @@ export default function SellerLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <aside className="w-72 bg-white border-r border-gray-200 flex flex-col sticky top-0 h-screen">
+      {/* SIDEBAR */}
+      <aside className="w-72 bg-white border-r border-gray-200 flex flex-col sticky top-0 h-screen shrink-0">
         <div className="p-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-800 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-green-900/20">
+            <div className="w-10 h-10 bg-[#0f7636] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-green-900/20">
               {storeName.charAt(0).toUpperCase()}
             </div>
             <div className="overflow-hidden">
@@ -47,9 +50,9 @@ export default function SellerLayout() {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
             return (
-              <Link key={item.name} to={item.path} className={`flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-200 group ${isActive ? 'bg-green-800 text-white shadow-lg shadow-green-900/20 font-semibold' : 'text-gray-500 hover:bg-green-50 hover:text-green-800'}`}>
+              <Link key={item.name} to={item.path} className={`flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-200 group ${isActive ? 'bg-[#0f7636] text-white shadow-lg shadow-green-900/20 font-semibold' : 'text-gray-500 hover:bg-green-50 hover:text-[#0f7636]'}`}>
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'group-hover:text-green-800'}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'group-hover:text-[#0f7636]'}`} />
                   <span className="text-sm">{item.name}</span>
                 </div>
                 {isActive && <ChevronRight className="w-4 h-4 text-white/70" />}
@@ -64,7 +67,20 @@ export default function SellerLayout() {
           </button>
         </div>
       </aside>
-      <main className="flex-1 p-10 overflow-y-auto"><Outlet /></main>
+
+      {/* MAIN CONTENT AREA */}
+      {/* 2. Diubah menjadi flex-col agar Footer bisa menempel di paling bawah */}
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-slate-50">
+        
+        {/* Area tempat Dashboard/Inventory/dll di-render */}
+        <div className="p-10 flex-1">
+          <Outlet />
+        </div>
+
+        {/* 3. FOOTER UNTUK DASHBOARD SELLER */}
+        <Footer />
+        
+      </main>
     </div>
   );
 }

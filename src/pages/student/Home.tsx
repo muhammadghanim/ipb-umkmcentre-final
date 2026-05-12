@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Star, Plus, Store, Utensils, Coffee, Cookie, Zap, Timer, Wallet, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
@@ -8,16 +8,16 @@ export default function StudentHome() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Semua');
   
-  // State untuk Carousel / Banner Layer
   const [currentSlide, setCurrentSlide] = useState(0);
-  // State untuk Countdown Timer
   const [timeLeft, setTimeLeft] = useState({h: '00', m: '00', s: '00'});
   
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
 
-  // PERBAIKAN: Kategori disesuaikan dengan nilai di Backend
+  // 1. MEMBUAT REFERENSI UNTUK BAGIAN PRODUK
+  const productSectionRef = useRef<HTMLDivElement>(null);
+
   const categories = [
     { name: 'Semua', icon: <Utensils className="w-4 h-4" /> },
     { name: 'Makanan', icon: <Utensils className="w-4 h-4" /> },
@@ -27,7 +27,6 @@ export default function StudentHome() {
     { name: 'Tanggal Tua', icon: <Wallet className="w-4 h-4" /> },
   ];
 
-  // Fetch Data Menu
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
@@ -43,7 +42,6 @@ export default function StudentHome() {
     fetchAllProducts();
   }, []);
 
-  // Effect untuk Auto-Slide Banner (Ganti setiap 6 detik)
   useEffect(() => {
     const slideInterval = setInterval(() => {
       setCurrentSlide((prev) => (prev === 0 ? 1 : 0));
@@ -51,14 +49,16 @@ export default function StudentHome() {
     return () => clearInterval(slideInterval);
   }, []);
 
-  // Effect untuk Hitung Mundur Jam Makan Siang (Target: 13:00)
+  // KONFIGURASI TARGET WAKTU FLASH SALE
+  const TARGET_JAM = 12; 
+  const TARGET_MENIT = 0;
+
   useEffect(() => {
     const timerInterval = setInterval(() => {
       const now = new Date();
       let target = new Date();
-      target.setHours(13, 0, 0, 0); // Target jam 1 siang
       
-      // Jika sudah lewat jam 1 siang, targetkan jam 1 siang besoknya
+      target.setHours(TARGET_JAM, TARGET_MENIT, 0, 0); 
       if (now.getTime() > target.getTime()) {
         target.setDate(target.getDate() + 1);
       }
@@ -90,19 +90,15 @@ export default function StudentHome() {
     alert(`${product.nama_menu} berhasil ditambahkan ke keranjang!`);
   };
 
-  // Logika Filter (Sekarang otomatis cocok dengan backend)
   const filteredProducts = products.filter(product => {
     const matchesSearch = 
       product.nama_menu.toLowerCase().includes(searchQuery.toLowerCase()) || 
       (product.nama_toko && product.nama_toko.toLowerCase().includes(searchQuery.toLowerCase()));
       
     if (!matchesSearch) return false;
-
     if (activeCategory === 'Semua') return true;
     if (activeCategory === 'Promo') return product.is_promo;
     if (activeCategory === 'Tanggal Tua') return product.harga <= 15000;
-    
-    // Pencocokan kategori eksak
     return product.kategori === activeCategory;
   });
 
@@ -114,14 +110,24 @@ export default function StudentHome() {
     setSearchParams({});
   };
 
+  // 2. FUNGSI UNTUK MENGGULIR HALAMAN SECARA MULUS
+  const handleCategoryClick = (categoryName: string) => {
+    setActiveCategory(categoryName);
+    // Tunggu sedikit agar state terupdate, lalu gulir
+    setTimeout(() => {
+      productSectionRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }, 100);
+  };
+
   return (
     <div className="space-y-12 pb-16">
       
-      {/* PREMIUM LAYERED HERO BANNER */}
       {!searchQuery && (
         <div className="relative rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200/50 h-[420px] md:h-[360px] group transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/70">
           
-          {/* Layer 1: Paket Tanggal Tua */}
           <div className={`absolute inset-0 bg-gradient-to-br from-[#e8811e] to-[#ff9f43] p-8 md:p-14 text-white flex flex-col md:flex-row items-center justify-between transition-all duration-1000 ease-in-out ${currentSlide === 0 ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-105'}`}>
             <div className="relative z-20 max-w-xl w-full text-center md:text-left order-2 md:order-1 mt-6 md:mt-0">
               <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-extrabold px-4 py-2 rounded-full uppercase tracking-wider mb-4 inline-flex items-center gap-2 border border-white/20 shadow-sm">
@@ -129,8 +135,10 @@ export default function StudentHome() {
               </span>
               <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight tracking-tighter drop-shadow-md">Makan Kenyang,<br /> Dompet Aman!</h1>
               <p className="text-orange-50 mb-8 text-sm md:text-base font-medium opacity-90 max-w-md mx-auto md:mx-0">Kurasi menu spesial di bawah <strong className='text-white font-bold'>Rp 15.000</strong> khusus untuk kamu yang berjuang di tanggal tua.</p>
+              
+              {/* TOMBOL BANNER MEMANGGIL FUNGSI SCROLL */}
               <button 
-                onClick={() => setActiveCategory('Tanggal Tua')}
+                onClick={() => handleCategoryClick('Tanggal Tua')}
                 className="bg-white text-[#e8811e] font-extrabold px-10 py-4 rounded-2xl hover:bg-orange-50 hover:shadow-2xl hover:shadow-orange-900/30 transition-all shadow-md hover:-translate-y-1 w-full md:w-auto text-lg"
               >
                 Lihat Menu Hemat
@@ -149,7 +157,6 @@ export default function StudentHome() {
             </div>
           </div>
 
-          {/* Layer 2: Flash Sale */}
           <div className={`absolute inset-0 bg-gradient-to-br from-[#0f7636] to-[#16a34a] p-8 md:p-14 text-white flex flex-col md:flex-row items-center justify-between transition-all duration-1000 ease-in-out ${currentSlide === 1 ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-105'}`}>
             <div className="relative z-20 max-w-xl w-full text-center md:text-left order-2 md:order-1 mt-4 md:mt-0">
               <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-extrabold px-4 py-2 rounded-full uppercase tracking-wider mb-4 inline-flex items-center gap-2 border border-white/20 shadow-sm">
@@ -173,8 +180,9 @@ export default function StudentHome() {
                 </div>
               </div>
               
+              {/* TOMBOL BANNER MEMANGGIL FUNGSI SCROLL */}
               <button 
-                onClick={() => setActiveCategory('Promo')}
+                onClick={() => handleCategoryClick('Promo')}
                 className="bg-white text-[#0f7636] font-extrabold px-10 py-4 rounded-2xl hover:bg-slate-100 hover:shadow-2xl hover:shadow-green-900/30 transition-all shadow-md hover:-translate-y-1 w-full md:w-auto flex items-center justify-center gap-3 text-lg"
               >
                 <Zap className="w-5 h-5 text-amber-500" /> Sikat Promonya!
@@ -193,22 +201,13 @@ export default function StudentHome() {
             </div>
           </div>
 
-          {/* Navigasi Carousel */}
           <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex gap-2">
             <button onClick={() => setCurrentSlide(0)} className={`h-2.5 rounded-full transition-all duration-300 ${currentSlide === 0 ? 'bg-white w-8 shadow-md' : 'bg-white/50 w-2.5 hover:bg-white/80'}`}></button>
             <button onClick={() => setCurrentSlide(1)} className={`h-2.5 rounded-full transition-all duration-300 ${currentSlide === 1 ? 'bg-white w-8 shadow-md' : 'bg-white/50 w-2.5 hover:bg-white/80'}`}></button>
           </div>
-          
-          <button onClick={() => setCurrentSlide(0)} className="absolute left-5 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 backdrop-blur-md rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/30 hidden md:block border border-white/20">
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button onClick={() => setCurrentSlide(1)} className="absolute right-5 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 backdrop-blur-md rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/30 hidden md:block border border-white/20">
-            <ChevronRight className="w-6 h-6" />
-          </button>
         </div>
       )}
 
-      {/* Hasil Pencarian */}
       {searchQuery && (
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm shadow-slate-100/50">
           <div>
@@ -221,14 +220,14 @@ export default function StudentHome() {
         </div>
       )}
 
-      {/* Category Pills Modern */}
       <div className="space-y-5">
         {!searchQuery && <h2 className="text-2xl font-black text-slate-950 tracking-tight">Kategori Terpopuler</h2>}
         <div className="flex gap-3.5 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1">
           {categories.map((cat) => (
             <button
               key={cat.name}
-              onClick={() => setActiveCategory(cat.name)}
+              // TOMBOL KATEGORI MEMANGGIL FUNGSI SCROLL
+              onClick={() => handleCategoryClick(cat.name)}
               className={`flex items-center gap-2.5 px-6 py-3.5 rounded-full text-sm font-extrabold whitespace-nowrap transition-all duration-300 border shadow-sm
                 ${activeCategory === cat.name 
                   ? 'bg-[#0f7636] text-white border-[#0f7636] shadow-lg shadow-green-200' 
@@ -240,8 +239,9 @@ export default function StudentHome() {
         </div>
       </div>
 
-      {/* Product Section */}
-      <div className='space-y-6'>
+      {/* 3. MENEMPELKAN REFERENSI (REF) DI BAGIAN PRODUK */}
+      {/* scroll-mt-24 menjaga agar bagian ini tidak tertutup navbar lengket saat di-scroll */}
+      <div ref={productSectionRef} className='space-y-6 scroll-mt-24 pt-2'>
         <div className="flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm shadow-slate-100/50 border border-slate-100">
           <h2 className="text-2xl font-black text-slate-950 tracking-tight">
             {searchQuery ? 'Semua Hasil' : activeCategory === 'Tanggal Tua' ? 'Paket Hemat (< Rp15k)' : activeCategory === 'Semua' ? 'Trending Hari Ini' : activeCategory}
@@ -261,7 +261,7 @@ export default function StudentHome() {
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-2">Ups! Menu Tidak Ditemukan</h3>
             <p className="text-slate-500 mb-8 max-w-sm mx-auto">Maaf, sepertinya belum ada menu yang cocok dengan kategori atau pencarianmu.</p>
-            <button onClick={() => { setActiveCategory('Semua'); clearSearch(); }} className="px-8 py-3.5 bg-[#0f7636] text-white font-extrabold rounded-xl shadow-lg shadow-green-700/30 hover:bg-green-800 transition-all hover:-translate-y-1">
+            <button onClick={() => handleCategoryClick('Semua')} className="px-8 py-3.5 bg-[#0f7636] text-white font-extrabold rounded-xl shadow-lg shadow-green-700/30 hover:bg-green-800 transition-all hover:-translate-y-1">
               Lihat Semua Menu
             </button>
           </div>
