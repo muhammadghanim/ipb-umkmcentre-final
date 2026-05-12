@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { UploadCloud, Save } from 'lucide-react';
+import { UploadCloud, Save, Store, Phone, FileText, QrCode, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
 
 export default function SellerSettings() {
@@ -19,7 +19,9 @@ export default function SellerSettings() {
           deskripsi: res.data.deskripsi || ''
         });
         if (res.data.qris_url) setQrisUrl(res.data.qris_url);
-      } catch (error) { console.error(error); }
+      } catch (error) { 
+        console.error(error); 
+      }
     };
     if (UMKM_ID) fetchProfile();
   }, [UMKM_ID]);
@@ -39,69 +41,148 @@ export default function SellerSettings() {
     try {
       // 1. Simpan Profil
       await api.patch(`/users/umkm/${UMKM_ID}/profile`, profile);
+      
       // 2. Simpan QRIS jika ada
       if (qrisUrl) {
         await api.patch(`/users/umkm/${UMKM_ID}/qris`, { qris_url: qrisUrl });
       }
+      
+      // Update nama toko di localStorage agar Header/Sidebar langsung berubah
+      localStorage.setItem('NAMA_TOKO', profile.nama_toko);
+      
       alert("Pengaturan Toko Berhasil Diperbarui!");
-      window.location.reload(); // Refresh untuk update nama di sidebar
+      window.location.reload(); // Refresh untuk update UI secara menyeluruh
     } catch (error) {
-      alert("Gagal memperbarui pengaturan");
+      alert("Gagal memperbarui pengaturan. Silakan coba lagi.");
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 pb-10">
+      
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Store Settings</h1>
-        <p className="text-gray-500 mt-1">Perbarui profil toko dan metode pembayaran Anda.</p>
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Pengaturan Toko</h1>
+        <p className="text-slate-500 font-medium">Perbarui profil informasi kantin dan metode pembayaran QRIS Anda di sini.</p>
       </div>
 
       <form onSubmit={handleSaveAll} className="space-y-8">
+        
         {/* PROFIL TOKO */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6">
-          <h2 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-4">Profil Toko</h2>
+        <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-[#0f7636]"></div>
+          
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+            <div className="w-10 h-10 bg-[#0f7636]/10 text-[#0f7636] rounded-xl flex items-center justify-center">
+              <Store className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">Informasi Dasar</h2>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nama Toko / Kantin</label>
-              <input required type="text" value={profile.nama_toko} onChange={(e) => setProfile({...profile, nama_toko: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-800 outline-none" />
+              <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <Store className="w-4 h-4 text-slate-400" /> Nama Toko / Kantin
+              </label>
+              <input 
+                required 
+                type="text" 
+                placeholder="Misal: Kantin Fakultas Pertanian"
+                value={profile.nama_toko} 
+                onChange={(e) => setProfile({...profile, nama_toko: e.target.value})} 
+                className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:bg-white focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none transition-all font-medium" 
+              />
             </div>
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp (Cth: 08123456789)</label>
-              <input type="text" value={profile.no_whatsapp} onChange={(e) => setProfile({...profile, no_whatsapp: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-800 outline-none" />
+              <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <Phone className="w-4 h-4 text-slate-400" /> Nomor WhatsApp
+              </label>
+              <input 
+                type="text" 
+                placeholder="Cth: 08123456789"
+                value={profile.no_whatsapp} 
+                onChange={(e) => setProfile({...profile, no_whatsapp: e.target.value})} 
+                className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:bg-white focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none transition-all font-medium" 
+              />
             </div>
+            
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi Singkat Toko</label>
-              <textarea rows={3} value={profile.deskripsi} onChange={(e) => setProfile({...profile, deskripsi: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-800 outline-none resize-none"></textarea>
+              <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-slate-400" /> Deskripsi Singkat Toko
+              </label>
+              <textarea 
+                rows={3} 
+                placeholder="Ceritakan sedikit tentang menu andalan atau keunggulan kantin Anda..."
+                value={profile.deskripsi} 
+                onChange={(e) => setProfile({...profile, deskripsi: e.target.value})} 
+                className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:bg-white focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none resize-none transition-all font-medium"
+              ></textarea>
             </div>
           </div>
         </div>
 
         {/* QRIS UPLOAD */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-4">Payment Configuration</h2>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Upload QRIS Barcode Anda</label>
+        <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-[#e8811e]"></div>
+          
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+            <div className="w-10 h-10 bg-[#e8811e]/10 text-[#e8811e] rounded-xl flex items-center justify-center">
+              <QrCode className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">Konfigurasi Pembayaran</h2>
+          </div>
+
+          <p className="text-sm font-medium text-slate-500 mb-4">
+            Upload gambar barcode QRIS Anda di sini. Mahasiswa akan men-scan barcode ini untuk melakukan pembayaran pesanan.
+          </p>
+
           <div 
             onClick={() => fileInputRef.current?.click()}
-            className="w-64 h-64 border-2 border-dashed border-green-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-green-50 transition-all overflow-hidden relative mb-4"
+            className={`w-full max-w-sm aspect-square border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden relative group
+              ${qrisUrl ? 'border-[#0f7636] bg-slate-50' : 'border-slate-300 hover:border-[#0f7636] hover:bg-[#0f7636]/5'}`}
           >
             {qrisUrl ? (
-              <img src={qrisUrl} alt="QRIS" className="w-full h-full object-contain mix-blend-multiply" />
+              <>
+                <img src={qrisUrl} alt="QRIS" className="w-full h-full object-contain mix-blend-multiply p-4" />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="text-white font-bold flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full text-sm">
+                    <UploadCloud className="w-4 h-4" /> Ganti Gambar QRIS
+                  </span>
+                </div>
+              </>
             ) : (
-              <div className="text-center">
-                <UploadCloud className="w-10 h-10 text-green-800 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-900">Klik untuk upload QRIS</p>
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <UploadCloud className="w-8 h-8 text-[#0f7636]" />
+                </div>
+                <h3 className="font-bold text-slate-900 mb-1">Klik untuk upload QRIS</h3>
+                <p className="text-xs text-slate-500 font-medium">Format: JPG, PNG (Max 5MB)</p>
               </div>
             )}
             <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/png, image/jpeg, image/jpg" className="hidden" />
           </div>
         </div>
 
-        <button type="submit" disabled={isSaving} className="bg-green-800 hover:bg-green-900 text-white font-bold py-4 px-8 rounded-xl transition-colors flex items-center justify-center gap-2 w-full md:w-auto">
-          <Save className="w-5 h-5" /> {isSaving ? 'Menyimpan...' : 'Simpan Semua Perubahan'}
-        </button>
+        {/* Action Button */}
+        <div className="flex justify-end pt-4">
+          <button 
+            type="submit" 
+            disabled={isSaving} 
+            className="bg-[#0f7636] hover:bg-green-800 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-lg shadow-green-700/30 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 w-full md:w-auto disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          >
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Menyimpan...
+              </span>
+            ) : (
+              <><Save className="w-5 h-5" /> Simpan Semua Perubahan</>
+            )}
+          </button>
+        </div>
+
       </form>
     </div>
   );

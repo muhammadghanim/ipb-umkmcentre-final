@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -47,11 +47,25 @@ def get_menu(menu_id: UUID, db: Session = Depends(get_db)):
     )
 
 @router.get("/", response_model=List[schemas.MenuResponse])
-def get_all_menus(db: Session = Depends(get_db)):
+def get_all_menus(request: Request, db: Session = Depends(get_db)): # <-- Tambahkan parameter request
     menus = menu_repo.get_all_menus(db)
     result = []
+    
+    # Ambil base URL secara dinamis (akan menjadi http://localhost:8000)
+    base_url = str(request.base_url) 
+    
     for m in menus:
         rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if m.ulasan else 0.0
+        
+        # --- PERBAIKAN LOGIKA URL GAMBAR ---
+        foto_valid = m.foto_url
+        if foto_valid and not foto_valid.startswith("http"):
+            # Hapus garis miring di awal jika ada, lalu gabungkan dengan base URL
+            # Contoh: "uploads/martabak.png" menjadi "http://localhost:8000/uploads/martabak.png"
+            clean_path = foto_valid.lstrip('/')
+            foto_valid = f"{base_url}{clean_path}"
+        # -----------------------------------
+        
         result.append(schemas.MenuResponse(
             id_menu=m.id_menu,
             id_umkm=m.id_umkm,
@@ -62,7 +76,7 @@ def get_all_menus(db: Session = Depends(get_db)):
             kategori=m.kategori,
             stok=m.stok,
             is_available=m.is_available,
-            foto_url=m.foto_url,
+            foto_url=foto_valid, # <-- Gunakan variabel foto_valid yang sudah diformat
             rating_rata_rata=round(rating_avg, 1),
             jumlah_ulasan=len(m.ulasan) if m.ulasan else 0
         ))
