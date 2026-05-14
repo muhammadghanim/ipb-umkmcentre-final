@@ -27,10 +27,16 @@ export default function Checkout() {
   const platformFee = 2000;
   const total = Math.max(0, subtotal - discount + platformFee);
 
-  const applyPromo = async () => {
-    if (!inputPromo) return;
+const applyPromo = async () => {
+    if (!inputPromo || cart.length === 0) return;
+    
+    // Ambil ID UMKM dari menu pertama yang ada di keranjang
+    const umkmId = cart[0].id_umkm;
+
     try {
-      const response = await api.get(`/promo/validasi/${inputPromo}`);
+      // Sisipkan id_umkm sebagai query parameter
+      const response = await api.get(`/promo/validasi/${inputPromo}?id_umkm=${umkmId}`);
+      
       if (response.data.is_valid) {
         setDiscount(response.data.nominal_diskon);
         setActivePromoCode(inputPromo);

@@ -82,6 +82,7 @@ class PromoCreate(PromoBase):
 class PromoResponse(PromoBase):
     id_promo: UUID
     id_umkm: UUID
+    nama_toko: Optional[str] = None # TAMBAHKAN BARIS INI
     model_config = ConfigDict(from_attributes=True)
 
 class DetailPesananCreate(BaseModel):
