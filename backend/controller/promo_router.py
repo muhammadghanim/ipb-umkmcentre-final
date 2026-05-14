@@ -23,9 +23,11 @@ def buat_promo(umkm_id: UUID, promo: schemas.PromoCreate, db: Session = Depends(
 
     return promo_repo.buatPromo(db=db, id_umkm=umkm_id, promo=promo)
 
+# Tambahkan parameter id_umkm di fungsi validasi_promo
 @router.get("/validasi/{kode_promo}")
-def validasi_promo(kode_promo: str, db: Session = Depends(get_db)):
-    is_valid, message, diskon = promo_repo.validasiMasaBerlaku(db=db, kode_promo=kode_promo)
+def validasi_promo(kode_promo: str, id_umkm: UUID, db: Session = Depends(get_db)):
+    # Kirimkan id_umkm ke repository
+    is_valid, message, diskon = promo_repo.validasiMasaBerlaku(db=db, kode_promo=kode_promo, id_umkm=id_umkm)
     if not is_valid:
         raise HTTPException(status_code=400, detail=message)
     return {"is_valid": True, "message": message, "nominal_diskon": diskon}
@@ -34,3 +36,14 @@ def validasi_promo(kode_promo: str, db: Session = Depends(get_db)):
 def get_promo_umkm(umkm_id: UUID, db: Session = Depends(get_db)):
     from backend.domain import models
     return db.query(models.Promo).filter(models.Promo.id_umkm == umkm_id).all()
+
+# ==========================================
+# RUTE BARU UNTUK HALAMAN MAHASISWA (FRONTEND)
+# ==========================================
+@router.get("/", response_model=list[schemas.PromoResponse])
+def get_semua_promo_aktif(db: Session = Depends(get_db)):
+    """
+    Mengambil semua daftar promo yang masih berlaku (belum kadaluarsa)
+    untuk ditampilkan di halaman Beranda -> Promo.
+    """
+    return promo_repo.get_all_active_promos(db)

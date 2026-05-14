@@ -1,21 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { Star, Plus, Store, Utensils, Coffee, Cookie, Zap, Timer, Wallet, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Star, Plus, Store, Utensils, Coffee, Cookie, Zap, Wallet, X, Ticket, Copy, CheckCircle2 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 
 export default function StudentHome() {
   const [products, setProducts] = useState<any[]>([]);
+  const [promos, setPromos] = useState<any[]>([]);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Semua');
   
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [timeLeft, setTimeLeft] = useState({h: '00', m: '00', s: '00'});
   
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
 
-  // 1. MEMBUAT REFERENSI UNTUK BAGIAN PRODUK
   const productSectionRef = useRef<HTMLDivElement>(null);
 
   const categories = [
@@ -24,22 +25,31 @@ export default function StudentHome() {
     { name: 'Minuman', icon: <Coffee className="w-4 h-4" /> },
     { name: 'Snack', icon: <Cookie className="w-4 h-4" /> },
     { name: 'Promo', icon: <Zap className="w-4 h-4" /> },
-    { name: 'Tanggal Tua', icon: <Wallet className="w-4 h-4" /> },
+    { name: 'Menu Hemat', icon: <Wallet className="w-4 h-4" /> },
   ];
 
   useEffect(() => {
-    const fetchAllProducts = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const response = await api.get(`/menus/`);
-        const shuffled = response.data.sort(() => 0.5 - Math.random());
+        const responseMenu = await api.get(`/menus/`);
+        const shuffled = responseMenu.data.sort(() => 0.5 - Math.random());
         setProducts(shuffled);
       } catch (error) {
         console.error("Gagal mengambil data menu:", error);
       } finally {
         setIsLoading(false);
       }
+
+      try {
+        const responsePromo = await api.get(`/promo/`);
+        setPromos(responsePromo.data);
+      } catch (error) {
+        console.error("Gagal mengambil data promo:", error);
+      }
     };
-    fetchAllProducts();
+    
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -47,30 +57,6 @@ export default function StudentHome() {
       setCurrentSlide((prev) => (prev === 0 ? 1 : 0));
     }, 6000);
     return () => clearInterval(slideInterval);
-  }, []);
-
-  // KONFIGURASI TARGET WAKTU FLASH SALE
-  const TARGET_JAM = 12; 
-  const TARGET_MENIT = 0;
-
-  useEffect(() => {
-    const timerInterval = setInterval(() => {
-      const now = new Date();
-      let target = new Date();
-      
-      target.setHours(TARGET_JAM, TARGET_MENIT, 0, 0); 
-      if (now.getTime() > target.getTime()) {
-        target.setDate(target.getDate() + 1);
-      }
-      
-      const diff = target.getTime() - now.getTime();
-      const h = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
-      const m = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
-      const s = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-      
-      setTimeLeft({h, m, s});
-    }, 1000);
-    return () => clearInterval(timerInterval);
   }, []);
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
@@ -97,8 +83,7 @@ export default function StudentHome() {
       
     if (!matchesSearch) return false;
     if (activeCategory === 'Semua') return true;
-    if (activeCategory === 'Promo') return product.is_promo;
-    if (activeCategory === 'Tanggal Tua') return product.harga <= 15000;
+    if (activeCategory === 'Menu Hemat') return product.harga <= 15000;
     return product.kategori === activeCategory;
   });
 
@@ -110,10 +95,8 @@ export default function StudentHome() {
     setSearchParams({});
   };
 
-  // 2. FUNGSI UNTUK MENGGULIR HALAMAN SECARA MULUS
   const handleCategoryClick = (categoryName: string) => {
     setActiveCategory(categoryName);
-    // Tunggu sedikit agar state terupdate, lalu gulir
     setTimeout(() => {
       productSectionRef.current?.scrollIntoView({ 
         behavior: 'smooth', 
@@ -122,12 +105,19 @@ export default function StudentHome() {
     }, 100);
   };
 
+  const copyPromoCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000); 
+  };
+
   return (
     <div className="space-y-12 pb-16">
       
       {!searchQuery && (
         <div className="relative rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200/50 h-[420px] md:h-[360px] group transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/70">
           
+          {/* BANNER 1 (ORANYE) */}
           <div className={`absolute inset-0 bg-gradient-to-br from-[#e8811e] to-[#ff9f43] p-8 md:p-14 text-white flex flex-col md:flex-row items-center justify-between transition-all duration-1000 ease-in-out ${currentSlide === 0 ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-105'}`}>
             <div className="relative z-20 max-w-xl w-full text-center md:text-left order-2 md:order-1 mt-6 md:mt-0">
               <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-extrabold px-4 py-2 rounded-full uppercase tracking-wider mb-4 inline-flex items-center gap-2 border border-white/20 shadow-sm">
@@ -136,9 +126,8 @@ export default function StudentHome() {
               <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight tracking-tighter drop-shadow-md">Makan Kenyang,<br /> Dompet Aman!</h1>
               <p className="text-orange-50 mb-8 text-sm md:text-base font-medium opacity-90 max-w-md mx-auto md:mx-0">Kurasi menu spesial di bawah <strong className='text-white font-bold'>Rp 15.000</strong> khusus untuk kamu yang berjuang di tanggal tua.</p>
               
-              {/* TOMBOL BANNER MEMANGGIL FUNGSI SCROLL */}
               <button 
-                onClick={() => handleCategoryClick('Tanggal Tua')}
+                onClick={() => handleCategoryClick('Menu Hemat')}
                 className="bg-white text-[#e8811e] font-extrabold px-10 py-4 rounded-2xl hover:bg-orange-50 hover:shadow-2xl hover:shadow-orange-900/30 transition-all shadow-md hover:-translate-y-1 w-full md:w-auto text-lg"
               >
                 Lihat Menu Hemat
@@ -157,35 +146,22 @@ export default function StudentHome() {
             </div>
           </div>
 
+          {/* BANNER 2 (HIJAU) - TATA LETAK DIREVISI */}
           <div className={`absolute inset-0 bg-gradient-to-br from-[#0f7636] to-[#16a34a] p-8 md:p-14 text-white flex flex-col md:flex-row items-center justify-between transition-all duration-1000 ease-in-out ${currentSlide === 1 ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-105'}`}>
-            <div className="relative z-20 max-w-xl w-full text-center md:text-left order-2 md:order-1 mt-4 md:mt-0">
+            <div className="relative z-20 max-w-xl w-full text-center md:text-left order-2 md:order-1 mt-6 md:mt-0">
               <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-extrabold px-4 py-2 rounded-full uppercase tracking-wider mb-4 inline-flex items-center gap-2 border border-white/20 shadow-sm">
-                <Timer className="w-4 h-4 animate-pulse" /> Flash Sale Jam Makan Siang
+                <Ticket className="w-4 h-4" /> Promo Spesial UMKM
               </span>
               
-              <div className="flex gap-2.5 justify-center md:justify-start items-center mb-6 font-mono font-black text-white tracking-tight drop-shadow-lg">
-                <div className='flex flex-col items-center bg-white/20 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/40 shadow-xl'>
-                  <span className='text-3xl md:text-5xl'>{timeLeft.h}</span>
-                  <span className='text-[10px] text-green-50 uppercase tracking-widest font-sans font-bold mt-1'>Jam</span>
-                </div>
-                <span className='text-3xl md:text-4xl text-white/70'>:</span>
-                <div className='flex flex-col items-center bg-white/20 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/40 shadow-xl'>
-                  <span className='text-3xl md:text-5xl'>{timeLeft.m}</span>
-                  <span className='text-[10px] text-green-50 uppercase tracking-widest font-sans font-bold mt-1'>Menit</span>
-                </div>
-                <span className='text-3xl md:text-4xl text-white/70'>:</span>
-                <div className='flex flex-col items-center bg-white/20 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/40 shadow-xl'>
-                  <span className='text-3xl md:text-5xl text-yellow-300'>{timeLeft.s}</span>
-                  <span className='text-[10px] text-green-50 uppercase tracking-widest font-sans font-bold mt-1'>Detik</span>
-                </div>
-              </div>
+              <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight tracking-tighter drop-shadow-md">Klaim Voucher,<br /> Diskon Spesial!</h1>
               
-              {/* TOMBOL BANNER MEMANGGIL FUNGSI SCROLL */}
+              <p className="text-green-50 mb-8 text-sm md:text-base font-medium opacity-90 max-w-md mx-auto md:mx-0">Dapatkan kode promo dari berbagai kantin favoritmu dan nikmati <strong className='text-white font-bold'>potongan harga</strong> langsung saat checkout.</p>
+              
               <button 
                 onClick={() => handleCategoryClick('Promo')}
-                className="bg-white text-[#0f7636] font-extrabold px-10 py-4 rounded-2xl hover:bg-slate-100 hover:shadow-2xl hover:shadow-green-900/30 transition-all shadow-md hover:-translate-y-1 w-full md:w-auto flex items-center justify-center gap-3 text-lg"
+                className="bg-white text-[#0f7636] font-extrabold px-10 py-4 rounded-2xl hover:bg-green-50 hover:shadow-2xl hover:shadow-green-900/30 transition-all shadow-md hover:-translate-y-1 w-full md:w-auto text-lg"
               >
-                <Zap className="w-5 h-5 text-amber-500" /> Sikat Promonya!
+                Lihat Kode Promo
               </button>
             </div>
             
@@ -226,7 +202,6 @@ export default function StudentHome() {
           {categories.map((cat) => (
             <button
               key={cat.name}
-              // TOMBOL KATEGORI MEMANGGIL FUNGSI SCROLL
               onClick={() => handleCategoryClick(cat.name)}
               className={`flex items-center gap-2.5 px-6 py-3.5 rounded-full text-sm font-extrabold whitespace-nowrap transition-all duration-300 border shadow-sm
                 ${activeCategory === cat.name 
@@ -239,71 +214,130 @@ export default function StudentHome() {
         </div>
       </div>
 
-      {/* 3. MENEMPELKAN REFERENSI (REF) DI BAGIAN PRODUK */}
-      {/* scroll-mt-24 menjaga agar bagian ini tidak tertutup navbar lengket saat di-scroll */}
       <div ref={productSectionRef} className='space-y-6 scroll-mt-24 pt-2'>
-        <div className="flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm shadow-slate-100/50 border border-slate-100">
-          <h2 className="text-2xl font-black text-slate-950 tracking-tight">
-            {searchQuery ? 'Semua Hasil' : activeCategory === 'Tanggal Tua' ? 'Paket Hemat (< Rp15k)' : activeCategory === 'Semua' ? 'Trending Hari Ini' : activeCategory}
-          </h2>
-          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-4 py-2 rounded-full shadow-inner">{filteredProducts.length} Menu ditemukan</span>
-        </div>
-
-        {isLoading ? (
-          <div className="text-center py-24 bg-white rounded-3xl border border-slate-100 shadow-sm">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0f7636] mx-auto mb-5"></div>
-            <p className="text-slate-500 font-semibold text-lg">Menyiapkan hidangan lezat...</p>
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300 shadow-inner px-6">
-            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-200">
-                <Store className="w-10 h-10 text-slate-400" />
+        
+        {/* BAGIAN TIKET VOUCHER */}
+        {activeCategory === 'Promo' && (
+          <div className="mb-10 bg-gradient-to-br from-amber-50 to-orange-50 border border-orange-100 rounded-3xl p-6 md:p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-white p-2.5 rounded-xl shadow-sm">
+                <Ticket className="w-6 h-6 text-[#e8811e]" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Klaim Kode Promo</h2>
+                <p className="text-slate-500 text-sm font-medium mt-0.5">Salin kode di bawah ini dan gunakan saat checkout!</p>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Ups! Menu Tidak Ditemukan</h3>
-            <p className="text-slate-500 mb-8 max-w-sm mx-auto">Maaf, sepertinya belum ada menu yang cocok dengan kategori atau pencarianmu.</p>
-            <button onClick={() => handleCategoryClick('Semua')} className="px-8 py-3.5 bg-[#0f7636] text-white font-extrabold rounded-xl shadow-lg shadow-green-700/30 hover:bg-green-800 transition-all hover:-translate-y-1">
-              Lihat Semua Menu
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-7">
-            {filteredProducts.map((product) => (
-              <Link to={`/product/${product.id_menu}`} key={product.id_menu} className="bg-white rounded-3xl p-5 shadow-sm shadow-slate-100/50 border border-slate-100 group hover:shadow-2xl hover:shadow-slate-200/70 hover:-translate-y-2 transition-all duration-500 flex flex-col h-full relative overflow-hidden">
-                
-                <div className="aspect-[4/3] bg-slate-100 rounded-2xl mb-5 relative overflow-hidden shrink-0 shadow-inner border border-slate-200/50">
-                  {product.foto_url ? (
-                    <img src={product.foto_url} alt={product.nama_menu} onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x300/e2e8f0/64748b?text=Image+Not+Found'; }} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
-                      <Utensils className="w-8 h-8 mb-2 opacity-50" />
+
+            {promos.length === 0 ? (
+              <div className="text-center py-10 bg-white/60 rounded-2xl border border-dashed border-orange-200">
+                <Ticket className="w-10 h-10 text-orange-200 mx-auto mb-3" />
+                <p className="text-slate-500 font-medium">Belum ada UMKM yang membagikan promo hari ini.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {promos.map((promo, idx) => (
+                  <div key={idx} className="bg-white border-2 border-dashed border-orange-200 rounded-2xl flex relative overflow-hidden group hover:border-[#e8811e] transition-colors shadow-sm hover:shadow-md">
+                    <div className="w-4 h-4 bg-orange-50 rounded-full absolute -left-2 top-1/2 -translate-y-1/2 border-r-2 border-dashed border-orange-200 group-hover:border-[#e8811e] transition-colors z-10"></div>
+                    <div className="w-4 h-4 bg-orange-50 rounded-full absolute -right-2 top-1/2 -translate-y-1/2 border-l-2 border-dashed border-orange-200 group-hover:border-[#e8811e] transition-colors z-10"></div>
+                    
+                    <div className="p-5 flex-1 border-r-2 border-dashed border-orange-100">
+                      <div className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">{promo.nama_toko || 'Voucher UMKM'}</div>
+                      <div className="text-2xl font-black text-[#e8811e] mb-2 leading-none">
+                        Diskon {promo.nominal_diskon >= 1000 ? `Rp${(promo.nominal_diskon/1000)}k` : `${promo.nominal_diskon}%`}
+                      </div>
+                      <div className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg inline-block tracking-widest uppercase">
+                        {promo.kode_promo}
+                      </div>
                     </div>
-                  )}
-                  {product.is_promo && (
-                    <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md uppercase tracking-wider z-10">PROMO</div>
-                  )}
-                </div>
-                
-                <div className="space-y-1.5 flex-1 mb-6">
-                  <h3 className="font-bold text-slate-950 text-base line-clamp-2 leading-tight group-hover:text-[#0f7636] transition-colors">{product.nama_menu}</h3>
-                  <div onClick={(e) => { e.preventDefault(); navigate(`/store/${product.id_umkm}`); }} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#0f7636] transition-colors cursor-pointer mt-1 bg-slate-50 w-fit px-2 py-0.5 rounded-md">
-                    <Store className="w-3.5 h-3.5 text-[#e8811e]" /> <span className="line-clamp-1">{product.nama_toko || 'Kantin IPB'}</span>
+                    
+                    <button 
+                      onClick={() => copyPromoCode(promo.kode_promo)}
+                      className="w-16 bg-orange-50 hover:bg-[#e8811e] text-[#e8811e] hover:text-white flex flex-col items-center justify-center transition-colors group/btn shrink-0"
+                    >
+                      {copiedCode === promo.kode_promo ? (
+                        <>
+                          <CheckCircle2 className="w-5 h-5 mb-1" />
+                          <span className="text-[10px] font-extrabold uppercase">Tersalin</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-5 h-5 mb-1 group-hover/btn:scale-110 transition-transform" />
+                          <span className="text-[10px] font-extrabold uppercase">Salin</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                </div>
-                
-                <div className="mt-auto flex items-end justify-between pt-4 border-t border-slate-100 gap-2">
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xl font-black text-[#0f7636] tracking-tight">Rp {product.harga.toLocaleString('id-ID')}</span>
-                    <div className="flex items-center gap-1 bg-amber-50 text-amber-900 px-2 py-1 rounded-lg text-xs font-extrabold w-fit border border-amber-100">
-                      <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" /> {product.rating_rata_rata ? product.rating_rata_rata.toFixed(1) : '0.0'}
-                    </div>
-                  </div>
-                  <button onClick={(e) => handleAddToCart(e, product)} className="bg-[#0f7636] text-white hover:bg-green-800 shadow-lg shadow-green-700/20 hover:shadow-green-700/40 w-11 h-11 flex items-center justify-center rounded-xl transition-all hover:scale-105 active:scale-95 shrink-0" title="Tambah ke Keranjang">
-                    <Plus className="w-6 h-6" />
-                  </button>
-                </div>
-              </Link>
-            ))}
+                ))}
+              </div>
+            )}
           </div>
+        )}
+
+        {/* BAGIAN DAFTAR MENU (DISEMBUNYIKAN SAAT TAB PROMO AKTIF) */}
+        {activeCategory !== 'Promo' && (
+          <>
+            <div className="flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm shadow-slate-100/50 border border-slate-100">
+              <h2 className="text-2xl font-black text-slate-950 tracking-tight">
+                {searchQuery ? 'Semua Hasil' : activeCategory === 'Menu Hemat' ? 'Paket Hemat (< Rp15k)' : activeCategory === 'Semua' ? 'Trending Hari Ini' : activeCategory}
+              </h2>
+              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-4 py-2 rounded-full shadow-inner">{filteredProducts.length} Menu ditemukan</span>
+            </div>
+
+            {isLoading ? (
+              <div className="text-center py-24 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0f7636] mx-auto mb-5"></div>
+                <p className="text-slate-500 font-semibold text-lg">Menyiapkan hidangan lezat...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300 shadow-inner px-6">
+                <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-200">
+                    <Store className="w-10 h-10 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">Ups! Menu Tidak Ditemukan</h3>
+                <p className="text-slate-500 mb-8 max-w-sm mx-auto">Maaf, sepertinya belum ada menu yang cocok dengan kategori atau pencarianmu.</p>
+                <button onClick={() => handleCategoryClick('Semua')} className="px-8 py-3.5 bg-[#0f7636] text-white font-extrabold rounded-xl shadow-lg shadow-green-700/30 hover:bg-green-800 transition-all hover:-translate-y-1">
+                  Lihat Semua Menu
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-7">
+                {filteredProducts.map((product) => (
+                  <Link to={`/product/${product.id_menu}`} key={product.id_menu} className="bg-white rounded-3xl p-5 shadow-sm shadow-slate-100/50 border border-slate-100 group hover:shadow-2xl hover:shadow-slate-200/70 hover:-translate-y-2 transition-all duration-500 flex flex-col h-full relative overflow-hidden">
+                    
+                    <div className="aspect-[4/3] bg-slate-100 rounded-2xl mb-5 relative overflow-hidden shrink-0 shadow-inner border border-slate-200/50">
+                      {product.foto_url ? (
+                        <img src={product.foto_url} alt={product.nama_menu} onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x300/e2e8f0/64748b?text=Image+Not+Found'; }} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                          <Utensils className="w-8 h-8 mb-2 opacity-50" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-1.5 flex-1 mb-6">
+                      <h3 className="font-bold text-slate-950 text-base line-clamp-2 leading-tight group-hover:text-[#0f7636] transition-colors">{product.nama_menu}</h3>
+                      <div onClick={(e) => { e.preventDefault(); navigate(`/store/${product.id_umkm}`); }} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#0f7636] transition-colors cursor-pointer mt-1 bg-slate-50 w-fit px-2 py-0.5 rounded-md">
+                        <Store className="w-3.5 h-3.5 text-[#e8811e]" /> <span className="line-clamp-1">{product.nama_toko || 'Kantin IPB'}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-auto flex items-end justify-between pt-4 border-t border-slate-100 gap-2">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-xl font-black text-[#0f7636] tracking-tight">Rp {product.harga.toLocaleString('id-ID')}</span>
+                        <div className="flex items-center gap-1 bg-amber-50 text-amber-900 px-2 py-1 rounded-lg text-xs font-extrabold w-fit border border-amber-100">
+                          <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" /> {product.rating_rata_rata ? product.rating_rata_rata.toFixed(1) : '0.0'}
+                        </div>
+                      </div>
+                      <button onClick={(e) => handleAddToCart(e, product)} className="bg-[#0f7636] text-white hover:bg-green-800 shadow-lg shadow-green-700/20 hover:shadow-green-700/40 w-11 h-11 flex items-center justify-center rounded-xl transition-all hover:scale-105 active:scale-95 shrink-0" title="Tambah ke Keranjang">
+                        <Plus className="w-6 h-6" />
+                      </button>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
