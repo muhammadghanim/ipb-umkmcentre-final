@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
@@ -23,12 +23,12 @@ def get_menus_by_umkm(umkm_id: UUID, db: Session = Depends(get_db)):
     menus = menu_repo.get_by_umkm(db=db, umkm_id=umkm_id)
     result = []
     for m in menus:
-        rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if m.ulasan else 0.0
+        rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if getattr(m, 'ulasan', None) else 0.0
         result.append(schemas.MenuResponse(
             **m.__dict__, 
-            nama_toko=m.umkm.nama_toko if m.umkm else "Kantin Kampus",
+            nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
             rating_rata_rata=round(rating_avg, 1), 
-            jumlah_ulasan=len(m.ulasan) if m.ulasan else 0
+            jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
         ))
     return result
 
@@ -38,46 +38,78 @@ def get_menu(menu_id: UUID, db: Session = Depends(get_db)):
     if not m:
         raise HTTPException(status_code=404, detail="Menu tidak ditemukan")
     
-    rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if m.ulasan else 0.0
+    rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if getattr(m, 'ulasan', None) else 0.0
     return schemas.MenuResponse(
         **m.__dict__, 
-        nama_toko=m.umkm.nama_toko if m.umkm else "Kantin Kampus",
+        nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
         rating_rata_rata=round(rating_avg, 1), 
-        jumlah_ulasan=len(m.ulasan) if m.ulasan else 0
+        jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
     )
 
 @router.get("/", response_model=List[schemas.MenuResponse])
-def get_all_menus(request: Request, db: Session = Depends(get_db)): # <-- Tambahkan parameter request
+def get_all_menus(request: Request, db: Session = Depends(get_db)): 
     menus = menu_repo.get_all_menus(db)
     result = []
     
-    # Ambil base URL secara dinamis (akan menjadi http://localhost:8000)
+    # Ambil base URL secara dinamis
     base_url = str(request.base_url) 
     
     for m in menus:
-        rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if m.ulasan else 0.0
+        rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if getattr(m, 'ulasan', None) else 0.0
         
-        # --- PERBAIKAN LOGIKA URL GAMBAR ---
         foto_valid = m.foto_url
-        if foto_valid and not foto_valid.startswith("http"):
-            # Hapus garis miring di awal jika ada, lalu gabungkan dengan base URL
-            # Contoh: "uploads/martabak.png" menjadi "http://localhost:8000/uploads/martabak.png"
+        # --- PERBAIKAN: Jangan menambahkan base_url jika foto_url merupakan Base64 string (diawali 'data:') ---
+        if foto_valid and not foto_valid.startswith("http") and not foto_valid.startswith("data:"):
             clean_path = foto_valid.lstrip('/')
             foto_valid = f"{base_url}{clean_path}"
-        # -----------------------------------
         
         result.append(schemas.MenuResponse(
             id_menu=m.id_menu,
             id_umkm=m.id_umkm,
-            nama_toko=m.umkm.nama_toko if m.umkm else "Kantin Kampus",
+            nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
             nama_menu=m.nama_menu,
             deskripsi=m.deskripsi,
             harga=m.harga,
             kategori=m.kategori,
             stok=m.stok,
             is_available=m.is_available,
-            foto_url=foto_valid, # <-- Gunakan variabel foto_valid yang sudah diformat
+            foto_url=foto_valid, 
             rating_rata_rata=round(rating_avg, 1),
-            jumlah_ulasan=len(m.ulasan) if m.ulasan else 0
+            jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
         ))
     return result
+
+@router.put("/{menu_id}", response_model=schemas.MenuResponse)
+def update_menu(menu_id: UUID, menu: schemas.MenuCreate, db: Session = Depends(get_db)):
+    updated_menu = menu_repo.update(db=db, menu_id=menu_id, menu_data=menu)
+    if not updated_menu:
+        raise HTTPException(status_code=404, detail="Menu tidak ditemukan")
+    
+    rating_avg = sum(u.rating for u in updated_menu.ulasan) / len(updated_menu.ulasan) if getattr(updated_menu, 'ulasan', None) else 0.0
+    return schemas.MenuResponse(
+        **updated_menu.__dict__, 
+        nama_toko=updated_menu.umkm.nama_toko if getattr(updated_menu, 'umkm', None) else "Kantin Kampus",
+        rating_rata_rata=round(rating_avg, 1), 
+        jumlah_ulasan=len(updated_menu.ulasan) if getattr(updated_menu, 'ulasan', None) else 0
+    )
+
+@router.delete("/{menu_id}", status_code=status.HTTP_200_OK)
+def delete_menu_endpoint(menu_id: UUID, db: Session = Depends(get_db)):
+    result = menu_repo.delete_menu(db, menu_id)
+    
+    if result["action"] == "not_found":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Menu tidak ditemukan"
+        )
+        
+    if result["action"] == "soft_disabled":
+        return {
+            "status": "success",
+            "message": "Menu tidak bisa dihapus permanen karena memiliki riwayat transaksi. Status menu diubah menjadi tidak tersedia."
+        }
+        
+    return {
+        "status": "success", 
+        "message": "Menu berhasil dihapus secara permanen dari sistem."
+    }
