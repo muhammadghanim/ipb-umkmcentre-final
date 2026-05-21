@@ -18,23 +18,22 @@ export default function Checkout() {
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
     if (savedCart.length === 0) {
-      navigate('/cart'); // Redirect jika keranjang kosong
+      navigate('/cart'); 
     }
     setCart(savedCart);
   }, [navigate]);
 
   const subtotal = cart.reduce((sum, item) => sum + item.harga * item.jumlah, 0);
-  const platformFee = 2000;
-  const total = Math.max(0, subtotal - discount + platformFee);
+  
+  // Platform fee dihapus dari kalkulasi
+  const total = Math.max(0, subtotal - discount);
 
-const applyPromo = async () => {
+  const applyPromo = async () => {
     if (!inputPromo || cart.length === 0) return;
     
-    // Ambil ID UMKM dari menu pertama yang ada di keranjang
     const umkmId = cart[0].id_umkm;
 
     try {
-      // Sisipkan id_umkm sebagai query parameter
       const response = await api.get(`/promo/validasi/${inputPromo}?id_umkm=${umkmId}`);
       
       if (response.data.is_valid) {
@@ -62,7 +61,6 @@ const applyPromo = async () => {
     try {
       const response = await api.post('/pesanan/', payload);
       localStorage.removeItem('cart');
-      // Kosongkan angka di navbar
       window.dispatchEvent(new Event('cartUpdated')); 
       navigate('/payment', { state: { orderId: response.data.id_pesanan, totalHarga: total, id_umkm: payload.id_umkm } });
     } catch (error: any) {
@@ -75,7 +73,7 @@ const applyPromo = async () => {
   return (
     <div className="max-w-5xl mx-auto">
       
-      {/* Stepper Modern (Sinkron dengan Cart) */}
+      {/* Stepper Modern */}
       <div className="flex items-center justify-center mb-10 overflow-x-auto py-2">
         <Link to="/cart" className="flex items-center text-[#0f7636] font-bold hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 rounded-full bg-[#0f7636] text-white flex items-center justify-center mr-2 shadow-md">
@@ -95,19 +93,16 @@ const applyPromo = async () => {
         </div>
       </div>
 
-      {/* JUDUL DIKELUARKAN DARI GRID AGAR KOTAK BAWAH SEJAJAR */}
       <div className="mb-6">
         <h1 className="text-3xl font-extrabold text-slate-900">Hampir Selesai!</h1>
       </div>
 
-      {/* Grid Utama */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Kolom Kiri: Form Informasi */}
         <div className="lg:col-span-2">
           <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-8">
             
-            {/* Input Catatan */}
             <div>
               <label className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
                 <PenSquare className="w-4 h-4 text-[#0f7636]" /> Catatan untuk Penjual (Opsional)
@@ -121,7 +116,6 @@ const applyPromo = async () => {
               ></textarea>
             </div>
             
-            {/* Input Promo */}
             <div className="pt-6 border-t border-slate-100">
               <label className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
                 <Tag className="w-4 h-4 text-amber-500" /> Punya Kode Promo?
@@ -154,7 +148,7 @@ const applyPromo = async () => {
           </div>
         </div>
 
-        {/* Kolom Kanan: Order Summary (Konsisten dengan Cart) */}
+        {/* Kolom Kanan: Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm sticky top-24">
             <h2 className="text-xl font-bold text-slate-900 mb-6">Ringkasan Pesanan</h2>
@@ -162,11 +156,12 @@ const applyPromo = async () => {
             <div className="space-y-4 mb-6 max-h-[40vh] overflow-y-auto pr-2 scrollbar-thin">
               {cart.map((item, idx) => (
                 <div key={idx} className="flex justify-between items-start gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-bold text-slate-900 line-clamp-2 leading-snug">{item.nama_menu}</div>
                     <div className="text-slate-500 text-xs font-medium mt-1">Qty: {item.jumlah}</div>
                   </div>
-                  <div className="font-bold text-slate-900 whitespace-nowrap mt-0.5">
+                  {/* whitespace-nowrap mencegah harga terpotong */}
+                  <div className="font-bold text-slate-900 whitespace-nowrap mt-0.5 shrink-0">
                     Rp {(item.harga * item.jumlah).toLocaleString('id-ID')}
                   </div>
                 </div>
@@ -174,28 +169,24 @@ const applyPromo = async () => {
             </div>
 
             <div className="pt-6 border-t border-slate-100 space-y-3 text-sm text-slate-600 mb-6">
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-2">
                 <span>Subtotal</span>
-                <span className="font-bold text-slate-900">Rp {subtotal.toLocaleString('id-ID')}</span>
+                <span className="font-bold text-slate-900 whitespace-nowrap">Rp {subtotal.toLocaleString('id-ID')}</span>
               </div>
               
               {discount > 0 && (
-                <div className="flex justify-between text-amber-600 bg-amber-50 px-2 py-1 rounded-md -mx-2">
+                <div className="flex justify-between text-amber-600 bg-amber-50 px-2 py-1 rounded-md -mx-2 gap-2">
                   <span className="font-bold">Promo diskon</span>
-                  <span className="font-bold">- Rp {discount.toLocaleString('id-ID')}</span>
+                  <span className="font-bold whitespace-nowrap">- Rp {discount.toLocaleString('id-ID')}</span>
                 </div>
               )}
-              
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-1">Biaya Platform</span>
-                <span className="font-bold text-slate-900">Rp {platformFee.toLocaleString('id-ID')}</span>
-              </div>
+              {/* Biaya Platform Telah Dihapus */}
             </div>
 
             <div className="pt-6 border-t border-slate-100 mb-8">
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-bold text-slate-900">Total Pembayaran</span>
-                <span className="text-2xl font-black text-[#0f7636]">Rp {total.toLocaleString('id-ID')}</span>
+              <div className="flex justify-between items-center mb-1 gap-2">
+                <span className="font-bold text-slate-900">Total</span>
+                <span className="text-2xl font-black text-[#0f7636] whitespace-nowrap">Rp {total.toLocaleString('id-ID')}</span>
               </div>
             </div>
 

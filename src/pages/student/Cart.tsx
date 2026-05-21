@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, ShoppingBag, Store, Utensils } from 'lucide-react';
+import { Trash2, ShoppingBag, Store, Utensils, Minus, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Cart() {
@@ -20,8 +20,23 @@ export default function Cart() {
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
+  const updateQuantity = (index: number, delta: number) => {
+    const newCart = [...cartItems];
+    const newQuantity = newCart[index].jumlah + delta;
+
+    if (newQuantity <= 0) {
+      hapusItem(index);
+      return;
+    }
+
+    newCart[index].jumlah = newQuantity;
+    setCartItems(newCart);
+    localStorage.setItem('cart', JSON.stringify(newCart));
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
+
   const subtotal = cartItems.reduce((sum, item) => sum + (item.harga * item.jumlah), 0);
-  const total = subtotal + 2000; // 2000 adalah biaya platform
+  const total = subtotal; // Biaya platform dihapus
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -44,7 +59,6 @@ export default function Cart() {
         </div>
       </div>
 
-      {/* JUDUL DIKELUARKAN DARI GRID AGAR KOTAK BAWAH SEJAJAR */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-extrabold text-slate-900">Keranjang Belanja</h2>
         <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-bold">
@@ -69,7 +83,6 @@ export default function Cart() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Notifikasi UMKM - Mengingatkan user mereka memesan dari 1 toko */}
               <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 border border-blue-100">
                 <Store className="w-4 h-4 shrink-0" />
                 Pesanan ini berasal dari {cartItems[0]?.nama_toko || 'satu UMKM/Kantin yang sama'}.
@@ -78,7 +91,6 @@ export default function Cart() {
               {cartItems.map((item, idx) => (
                 <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row gap-4 sm:items-center shadow-sm hover:shadow-md transition-shadow relative group">
                   
-                  {/* Gambar Produk dengan Fallback */}
                   <div className="w-full sm:w-24 h-48 sm:h-24 bg-slate-100 rounded-xl overflow-hidden shrink-0">
                     {item.foto_url ? (
                       <img 
@@ -94,21 +106,37 @@ export default function Cart() {
                     )}
                   </div>
                   
-                  {/* Info Produk */}
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-slate-900 leading-tight mb-1">{item.nama_menu}</h3>
-                    <div className="text-[#0f7636] font-extrabold text-lg">Rp {item.harga.toLocaleString('id-ID')}</div>
+                  {/* Info Produk (Penyesuaian wrapping) */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg text-slate-900 leading-tight mb-1 truncate">{item.nama_menu}</h3>
+                    <div className="text-[#0f7636] font-extrabold text-lg whitespace-nowrap">Rp {item.harga.toLocaleString('id-ID')}</div>
                   </div>
                   
                   {/* Aksi (Qty & Hapus) */}
-                  <div className="flex items-center justify-between sm:justify-end gap-6 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
-                    <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
-                      <span className="text-slate-500 text-sm mr-2">Qty:</span>
-                      <span className="font-bold text-slate-900">{item.jumlah}</span>
+                  <div className="flex items-center justify-between sm:justify-end gap-4 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 shrink-0">
+                    
+                    {/* Kontrol Qty Plus Minus */}
+                    <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                      <button 
+                        onClick={() => updateQuantity(idx, -1)} 
+                        className="p-2 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="font-bold text-slate-900 px-3 min-w-[2.5rem] text-center select-none">
+                        {item.jumlah}
+                      </span>
+                      <button 
+                        onClick={() => updateQuantity(idx, 1)} 
+                        className="p-2 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
                     </div>
+
                     <button 
                       onClick={() => hapusItem(idx)} 
-                      className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
                       title="Hapus item"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -120,26 +148,23 @@ export default function Cart() {
           )}
         </div>
 
-        {/* Kolom Kanan: Order Summary (Sticky) */}
+        {/* Kolom Kanan: Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm sticky top-24">
             <h2 className="text-xl font-bold text-slate-900 mb-6">Ringkasan Pesanan</h2>
             
             <div className="space-y-4 text-slate-600 mb-6 pb-6 border-b border-slate-100">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center gap-2">
                 <span>Subtotal</span>
-                <span className="font-bold text-slate-900">Rp {subtotal.toLocaleString('id-ID')}</span>
+                <span className="font-bold text-slate-900 whitespace-nowrap">Rp {subtotal.toLocaleString('id-ID')}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-1">Biaya Platform <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">Info</span></span>
-                <span className="font-bold text-slate-900">Rp 2.000</span>
-              </div>
+              {/* Biaya Platform Telah Dihapus */}
             </div>
             
             <div className="mb-8">
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-bold text-slate-900">Total Pembayaran</span>
-                <span className="font-black text-2xl text-[#0f7636]">Rp {total.toLocaleString('id-ID')}</span>
+              <div className="flex justify-between items-center mb-1 gap-2">
+                <span className="font-bold text-slate-900">Total</span>
+                <span className="font-black text-2xl text-[#0f7636] whitespace-nowrap">Rp {total.toLocaleString('id-ID')}</span>
               </div>
               <p className="text-xs text-right text-slate-400">Termasuk pajak</p>
             </div>
