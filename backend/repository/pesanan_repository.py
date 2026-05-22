@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from uuid import UUID
 from backend.domain import models, schemas
 from backend.repository.menu_repository import MenuRepository
@@ -44,14 +44,14 @@ class PesananRepository:
             else:
                 raise ValueError(f"Promo Gagal: {msg}")
 
-        total_harga += 2000
+        # BARIS "total_harga += 2000" SUDAH DIHAPUS
 
         db_pesanan = models.Pesanan(
             id_mahasiswa=pesanan.id_mahasiswa,
             id_umkm=pesanan.id_umkm,
             total_harga=total_harga,
             status_pesanan="PENDING",
-            catatan=pesanan.catatan # Merekam catatan
+            catatan=pesanan.catatan 
         )
         
         db.add(db_pesanan)
@@ -71,10 +71,30 @@ class PesananRepository:
         return db.query(models.Pesanan).filter(models.Pesanan.id_pesanan == pesanan_id).first()
         
     def get_pesanan_by_umkm(self, db: Session, umkm_id: UUID):
-        return db.query(models.Pesanan).filter(models.Pesanan.id_umkm == umkm_id).all()
+        return (
+            db.query(models.Pesanan)
+            .options(
+                joinedload(models.Pesanan.detail_pesanan).joinedload(models.DetailPesanan.menu),
+                joinedload(models.Pesanan.pembayaran),
+                joinedload(models.Pesanan.mahasiswa)
+            )
+            .filter(models.Pesanan.id_umkm == umkm_id)
+            .order_by(models.Pesanan.tgl_pesanan.desc())
+            .all()
+        )
 
     def get_pesanan_by_mahasiswa(self, db: Session, mahasiswa_id: UUID):
-        return db.query(models.Pesanan).filter(models.Pesanan.id_mahasiswa == mahasiswa_id).all()
+        return (
+            db.query(models.Pesanan)
+            .options(
+                joinedload(models.Pesanan.detail_pesanan).joinedload(models.DetailPesanan.menu),
+                joinedload(models.Pesanan.pembayaran),
+                joinedload(models.Pesanan.umkm)
+            )
+            .filter(models.Pesanan.id_mahasiswa == mahasiswa_id)
+            .order_by(models.Pesanan.tgl_pesanan.desc())
+            .all()
+        )
         
     def update_status(self, db: Session, pesanan_id: UUID, status: str):
         pesanan = self.find_by_id(db, pesanan_id)

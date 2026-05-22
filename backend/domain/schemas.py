@@ -82,7 +82,7 @@ class PromoCreate(PromoBase):
 class PromoResponse(PromoBase):
     id_promo: UUID
     id_umkm: UUID
-    nama_toko: Optional[str] = None # TAMBAHKAN BARIS INI
+    nama_toko: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 class DetailPesananCreate(BaseModel):
@@ -95,6 +95,7 @@ class DetailPesananResponse(BaseModel):
     jumlah: int
     harga_satuan: float
     subtotal: float
+    menu: Optional[MenuResponse] = None # Agar data nama menu ikut masuk
     model_config = ConfigDict(from_attributes=True)
 
 class PembayaranResponse(BaseModel):
@@ -123,6 +124,7 @@ class PesananResponse(BaseModel):
     catatan: Optional[str] = None # FITUR BARU
     detail_pesanan: List[DetailPesananResponse] = []
     pembayaran: Optional[PembayaranResponse] = None
+    mahasiswa: Optional[MahasiswaResponse] = None # Agar data nama mahasiswa bisa digunakan
     model_config = ConfigDict(from_attributes=True)
 
 class UploadBuktiRequest(BaseModel):
