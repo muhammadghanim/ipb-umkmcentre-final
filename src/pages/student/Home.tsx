@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Star, Plus, Store, Utensils, Coffee, Cookie, Zap, Wallet, X, Ticket, Copy, CheckCircle2 } from 'lucide-react';
+import { Star, Plus, Store, Utensils, Coffee, Cookie, Zap, Wallet, X, Ticket, Copy, CheckCircle2, MapPin } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -317,8 +317,15 @@ export default function StudentHome() {
                     
                     <div className="space-y-1.5 flex-1 mb-6">
                       <h3 className="font-bold text-slate-950 text-base line-clamp-2 leading-tight group-hover:text-[#0f7636] transition-colors">{product.nama_menu}</h3>
-                      <div onClick={(e) => { e.preventDefault(); navigate(`/store/${product.id_umkm}`); }} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#0f7636] transition-colors cursor-pointer mt-1 bg-slate-50 w-fit px-2 py-0.5 rounded-md">
-                        <Store className="w-3.5 h-3.5 text-[#e8811e]" /> <span className="line-clamp-1">{product.nama_toko || 'Kantin IPB'}</span>
+                      <div className="flex flex-col gap-1 mt-1.5">
+                        <div onClick={(e) => { e.preventDefault(); navigate(`/store/${product.id_umkm}`); }} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#0f7636] transition-colors cursor-pointer bg-slate-50 w-fit px-2 py-0.5 rounded-md">
+                          <Store className="w-3.5 h-3.5 text-[#e8811e]" /> <span className="line-clamp-1">{product.nama_toko || 'Kantin IPB'}</span>
+                        </div>
+                        {product.lokasi_toko && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 px-0.5">
+                            <MapPin className="w-3.5 h-3.5 text-[#0f7636] shrink-0" /> <span className="line-clamp-1">{product.lokasi_toko}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     

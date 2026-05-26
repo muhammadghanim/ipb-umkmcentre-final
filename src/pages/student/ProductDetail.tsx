@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Heart, Star, Minus, Plus, ShoppingBag, Store, MessageSquare, Utensils } from 'lucide-react';
+import { Heart, Star, Minus, Plus, ShoppingBag, Store, MessageSquare, Utensils, MapPin } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -99,10 +99,17 @@ export default function ProductDetail() {
           <div className="flex flex-col">
             <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3 leading-tight">{product.nama_menu}</h1>
             
-            {/* Navigasi Toko */}
-            <Link to={`/store/${product.id_umkm}`} className="inline-flex items-center gap-2 text-md font-semibold text-slate-500 hover:text-[#0f7636] mb-6 w-fit transition-colors bg-slate-50 hover:bg-[#0f7636]/10 px-4 py-2 rounded-xl">
-              <Store className="w-5 h-5" /> {product.nama_toko || 'Mitra UMKM IPB'}
-            </Link>
+            {/* Navigasi Toko & Lokasi Toko */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <Link to={`/store/${product.id_umkm}`} className="inline-flex items-center gap-2 text-md font-semibold text-slate-500 hover:text-[#0f7636] transition-colors bg-slate-50 hover:bg-[#0f7636]/10 px-4 py-2 rounded-xl">
+                <Store className="w-5 h-5 text-[#e8811e]" /> {product.nama_toko || 'Mitra UMKM IPB'}
+              </Link>
+              {product.lokasi_toko && (
+                <div className="inline-flex items-center gap-2 text-md font-semibold text-slate-500 bg-slate-50 px-4 py-2 rounded-xl">
+                  <MapPin className="w-5 h-5 text-[#0f7636]" /> {product.lokasi_toko}
+                </div>
+              )}
+            </div>
             
             {/* Rating & Ulasan */}
             <div className="flex items-center gap-4 text-sm mb-8 pb-6 border-b border-slate-100">

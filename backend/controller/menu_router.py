@@ -27,6 +27,7 @@ def get_menus_by_umkm(umkm_id: UUID, db: Session = Depends(get_db)):
         result.append(schemas.MenuResponse(
             **m.__dict__, 
             nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
+            lokasi_toko=m.umkm.lokasi_toko if getattr(m, 'umkm', None) else None,
             rating_rata_rata=round(rating_avg, 1), 
             jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
         ))
@@ -42,6 +43,7 @@ def get_menu(menu_id: UUID, db: Session = Depends(get_db)):
     return schemas.MenuResponse(
         **m.__dict__, 
         nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
+        lokasi_toko=m.umkm.lokasi_toko if getattr(m, 'umkm', None) else None,
         rating_rata_rata=round(rating_avg, 1), 
         jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
     )
@@ -67,6 +69,7 @@ def get_all_menus(request: Request, db: Session = Depends(get_db)):
             id_menu=m.id_menu,
             id_umkm=m.id_umkm,
             nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
+            lokasi_toko=m.umkm.lokasi_toko if getattr(m, 'umkm', None) else None,
             nama_menu=m.nama_menu,
             deskripsi=m.deskripsi,
             harga=m.harga,
@@ -89,6 +92,7 @@ def update_menu(menu_id: UUID, menu: schemas.MenuCreate, db: Session = Depends(g
     return schemas.MenuResponse(
         **updated_menu.__dict__, 
         nama_toko=updated_menu.umkm.nama_toko if getattr(updated_menu, 'umkm', None) else "Kantin Kampus",
+        lokasi_toko=updated_menu.umkm.lokasi_toko if getattr(updated_menu, 'umkm', None) else None,
         rating_rata_rata=round(rating_avg, 1), 
         jumlah_ulasan=len(updated_menu.ulasan) if getattr(updated_menu, 'ulasan', None) else 0
     )

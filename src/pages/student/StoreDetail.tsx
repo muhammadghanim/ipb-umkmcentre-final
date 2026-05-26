@@ -94,7 +94,7 @@ export default function StoreDetail() {
                 <Phone className="w-4 h-4 text-[#0f7636]" /> {store.no_whatsapp || "Kontak belum tersedia"}
               </span>
               <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
-                <MapPin className="w-4 h-4 text-[#e8811e]" /> IPB Dramaga
+                <MapPin className="w-4 h-4 text-[#e8811e]" /> {store.lokasi_toko || "Lokasi belum tersedia"}
               </span>
             </div>
           </div>

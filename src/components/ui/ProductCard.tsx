@@ -7,6 +7,7 @@ export function ProductCard({
   image, 
   title, 
   store, 
+  lokasi_toko,
   price, 
   originalPrice,
   rating,
@@ -61,9 +62,17 @@ export function ProductCard({
             )}
           </div>
           
-          <div className="flex items-center gap-1 text-slate-500 text-xs mb-4">
-            <Store className="w-3.5 h-3.5" />
-            <span className="line-clamp-1">{store}</span>
+          <div className="flex flex-col gap-1 mb-4 text-xs">
+            <div className="flex items-center gap-1 text-slate-500">
+              <Store className="w-3.5 h-3.5" />
+              <span className="line-clamp-1">{store}</span>
+            </div>
+            {lokasi_toko && (
+              <div className="flex items-center gap-1 text-slate-400">
+                <MapPin className="w-3.5 h-3.5 text-[#0f7636] shrink-0" />
+                <span className="line-clamp-1">{lokasi_toko}</span>
+              </div>
+            )}
           </div>
           
           <div className="mt-auto flex items-end justify-between">

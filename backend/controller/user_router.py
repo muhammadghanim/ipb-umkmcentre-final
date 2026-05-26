@@ -73,6 +73,7 @@ def update_profile_umkm(umkm_id: UUID, req: schemas.UMKMUpdateProfile, db: Sessi
     umkm.nama_toko = req.nama_toko
     umkm.deskripsi = req.deskripsi
     umkm.no_whatsapp = req.no_whatsapp
+    umkm.lokasi_toko = req.lokasi_toko
     db.commit()
     db.refresh(umkm)
     return umkm

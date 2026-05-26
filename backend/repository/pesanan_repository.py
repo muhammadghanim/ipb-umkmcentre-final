@@ -36,7 +36,7 @@ class PesananRepository:
             db_items.append(db_item)
 
         if pesanan.kode_promo:
-            is_valid, msg, diskon = self.promo_repo.validasiMasaBerlaku(db, pesanan.kode_promo)
+            is_valid, msg, diskon = self.promo_repo.validasiMasaBerlaku(db, pesanan.kode_promo, pesanan.id_umkm)
             if is_valid:
                 total_harga -= diskon
                 if total_harga < 0: 

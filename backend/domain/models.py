@@ -34,6 +34,7 @@ class UMKM(User):
     status_buka = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
     qris_url = Column(Text, nullable=True)
+    lokasi_toko = Column(Text, nullable=True)
 
     __mapper_args__ = { "polymorphic_identity": "umkm" }
     menu_list = relationship("Menu", back_populates="umkm", cascade="all, delete-orphan")

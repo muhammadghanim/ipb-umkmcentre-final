@@ -34,6 +34,7 @@ class UMKMResponse(UserBase):
     status_buka: bool
     is_verified: bool
     qris_url: Optional[str] = None
+    lokasi_toko: Optional[str] = None
     role: str
     model_config = ConfigDict(from_attributes=True)
 
@@ -41,6 +42,7 @@ class UMKMUpdateProfile(BaseModel):
     nama_toko: str
     deskripsi: Optional[str] = None
     no_whatsapp: Optional[str] = None
+    lokasi_toko: Optional[str] = None
     
 class UMKMUpdateQRIS(BaseModel):
     qris_url: str
@@ -65,6 +67,7 @@ class MenuResponse(MenuBase):
     id_menu: UUID
     id_umkm: UUID
     nama_toko: Optional[str] = None 
+    lokasi_toko: Optional[str] = None
     rating_rata_rata: Optional[float] = 0.0
     jumlah_ulasan: Optional[int] = 0
     model_config = ConfigDict(from_attributes=True)

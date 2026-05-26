@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { UploadCloud, Save, Store, Phone, FileText, QrCode, CheckCircle2 } from 'lucide-react';
+import { UploadCloud, Save, Store, Phone, FileText, QrCode, CheckCircle2, MapPin } from 'lucide-react';
 import api from '../../services/api';
 
 export default function SellerSettings() {
-  const [profile, setProfile] = useState({ nama_toko: '', no_whatsapp: '', deskripsi: '' });
+  const [profile, setProfile] = useState({ nama_toko: '', no_whatsapp: '', deskripsi: '', lokasi_toko: '' });
   const [qrisUrl, setQrisUrl] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -16,7 +16,8 @@ export default function SellerSettings() {
         setProfile({
           nama_toko: res.data.nama_toko || '',
           no_whatsapp: res.data.no_whatsapp || '',
-          deskripsi: res.data.deskripsi || ''
+          deskripsi: res.data.deskripsi || '',
+          lokasi_toko: res.data.lokasi_toko || ''
         });
         if (res.data.qris_url) setQrisUrl(res.data.qris_url);
       } catch (error) { 
@@ -105,6 +106,19 @@ export default function SellerSettings() {
                 placeholder="Cth: 08123456789"
                 value={profile.no_whatsapp} 
                 onChange={(e) => setProfile({...profile, no_whatsapp: e.target.value})} 
+                className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:bg-white focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none transition-all font-medium" 
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-slate-400" /> Lokasi Toko / Kantin
+              </label>
+              <input 
+                type="text" 
+                placeholder="Misal: Kantin Stevia, Fakultas Pertanian"
+                value={profile.lokasi_toko} 
+                onChange={(e) => setProfile({...profile, lokasi_toko: e.target.value})} 
                 className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:bg-white focus:ring-4 focus:ring-[#0f7636]/10 focus:border-[#0f7636] outline-none transition-all font-medium" 
               />
             </div>
