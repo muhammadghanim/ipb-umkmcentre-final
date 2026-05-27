@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from uuid import UUID
-from backend.domain import models, schemas
+from ..domain import models, schemas
 
 class UlasanRepository:
     def create_ulasan(self, db: Session, mahasiswa_id: UUID, ulasan: schemas.UlasanCreate):

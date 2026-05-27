@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from uuid import UUID
-from backend.domain import schemas
-from backend.repository.pembayaran_repository import PembayaranRepository
-from backend.database import get_db
+from ..domain import schemas
+from ..repository.pembayaran_repository import PembayaranRepository
+from ..database import get_db
 
 router = APIRouter(prefix="/pembayaran", tags=["Pembayaran"])
 pembayaran_repo = PembayaranRepository()

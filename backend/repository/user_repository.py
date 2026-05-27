@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from uuid import UUID
-from backend.domain import models, schemas
-from backend.core.security import get_password_hash
+from ..domain import models, schemas
+from ..core.security import get_password_hash
 
 class UserRepository:
     def get_mahasiswa(self, db: Session, user_id: UUID):

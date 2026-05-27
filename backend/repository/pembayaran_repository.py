@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from uuid import UUID
 from datetime import datetime, timedelta
-from backend.domain import models
-from backend.repository.pesanan_repository import PesananRepository
+from ..domain import models
+from ..repository.pesanan_repository import PesananRepository
 
 class PembayaranRepository:
     def __init__(self):

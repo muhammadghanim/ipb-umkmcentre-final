@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
-from backend.domain import schemas
-from backend.repository.ulasan_repository import UlasanRepository
-from backend.database import get_db
+from ..domain import schemas
+from ..repository.ulasan_repository import UlasanRepository
+from ..database import get_db
 
 router = APIRouter(prefix="/ulasan", tags=["Ulasan"])
 ulasan_repo = UlasanRepository()

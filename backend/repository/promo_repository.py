@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from uuid import UUID
 from datetime import datetime
-from backend.domain import models, schemas
+from ..domain import models, schemas
 
 class PromoRepository:
     def buatPromo(self, db: Session, id_umkm: UUID, promo: schemas.PromoCreate):

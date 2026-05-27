@@ -2,11 +2,10 @@ import os # <-- 1. Tambahkan import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from backend.database import engine, Base
-from backend.controller import user_router, menu_router, pesanan_router, promo_router, pembayaran_router, ulasan_router
-from backend.domain import schemas
-from backend.repository.user_repository import UserRepository
-from backend.database import get_db
+from .database import engine, Base, get_db
+from .controller import user_router, menu_router, pesanan_router, promo_router, pembayaran_router, ulasan_router
+from .domain import schemas
+from .repository.user_repository import UserRepository
 from sqlalchemy.orm import Session
 
 # Membuat tabel database

@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import Column, String, Float, Integer, Boolean, ForeignKey, DateTime, Text, Uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from backend.database import Base
+from ..database import Base
 
 class User(Base):
     __tablename__ = "users"
