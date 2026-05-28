@@ -1,5 +1,7 @@
 import os # <-- 1. Tambahkan import os
-from fastapi import FastAPI, Depends
+import traceback
+from fastapi import FastAPI, Depends, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import engine, Base, get_db
@@ -16,6 +18,18 @@ app = FastAPI(
     description="Sistem backend untuk manajemen pre-order makanan mahasiswa",
     version="1.0.0"
 )
+
+# --- GLOBAL EXCEPTION HANDLER FOR CORS AND DEBUGGING ---
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    tb = traceback.format_exc()
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": str(exc),
+            "traceback": tb.split("\n")
+        }
+    )
 
 # --- 2. TAMBAHKAN BLOK KODE INI UNTUK MENANGANI FOLDER UPLOADS SECARA OTOMATIS ---
 # Ambil lokasi absolut dari file main.py saat ini
