@@ -30,16 +30,6 @@ async def global_exception_handler(request: Request, exc: Exception):
             "traceback": tb.split("\n")
         }
     )
-
-@app.get("/debug-hash")
-def debug_hash():
-    from core.security import get_password_hash
-    try:
-        h = get_password_hash("test")
-        return {"status": "ok", "hash": h}
-    except Exception as e:
-        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
-
 # --- 2. TAMBAHKAN BLOK KODE INI UNTUK MENANGANI FOLDER UPLOADS SECARA OTOMATIS ---
 # Ambil lokasi absolut dari file main.py saat ini
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
