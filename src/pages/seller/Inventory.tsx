@@ -365,7 +365,7 @@ export default function Inventory() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-1.5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-1.5 transition-opacity">
                       <button 
                         onClick={() => handleEditClick(item)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100" 
