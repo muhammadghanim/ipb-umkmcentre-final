@@ -1,9 +1,14 @@
+import os  # <-- Tambahkan import os
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta
+from dotenv import load_dotenv  # <-- Tambahkan import load_dotenv
 
-# Konfigurasi JWT (Di tahap produksi, masukkan SECRET_KEY ini ke dalam file .env)
-SECRET_KEY = "kunci-rahasia-ipb-food-hub-super-aman"
+# Memuat variabel dari file .env
+load_dotenv()
+
+# Mengambil SECRET_KEY dari .env. Jika tidak ada, gunakan fallback default.
+SECRET_KEY = os.getenv("SECRET_KEY", "kunci-rahasia-default-jika-env-lupa-diisi")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # Token aktif 1 hari
 
@@ -18,6 +23,7 @@ def get_password_hash(password):
 
 def create_access_token(data: dict):
     to_encode = data.copy()
+    # Menggunakan datetime.utcnow() sesuai dengan kode awal Anda
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
