@@ -31,14 +31,21 @@ if not os.path.exists(UPLOADS_DIR):
 app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 # --------------------------------------------------------------------------------
 
-ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,https://*.vercel.app"
-).split(",")
+# --- PERBAIKAN CORS ---
+# Pisahkan origins normal (localhost, dll) ke dalam list
+origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "https://adskelompok3-ipb-umkm-centre.vercel.app"  # Daftarkan domain production secara eksplisit
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=origins,
+    # Menggunakan regex agar semua deployment preview dari Vercel (*.vercel.app) tetap diizinkan
+    allow_origin_regex=r"https://.*\.vercel\.app", 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
