@@ -11,6 +11,12 @@ router = APIRouter(prefix="/menus", tags=["Menus"])
 menu_repo = MenuRepository()
 user_repo = UserRepository()
 
+def format_foto_url(foto_url: str, base_url: str) -> str:
+    if foto_url and not foto_url.startswith("http") and not foto_url.startswith("data:") and not foto_url.startswith("blob:"):
+        clean_path = foto_url.lstrip('/')
+        return f"{base_url}{clean_path}"
+    return foto_url
+
 @router.post("/umkm/{umkm_id}", response_model=schemas.MenuResponse, status_code=201)
 def create_menu(umkm_id: UUID, menu: schemas.MenuCreate, db: Session = Depends(get_db)):
     umkm = user_repo.get_umkm(db, umkm_id)
@@ -19,31 +25,46 @@ def create_menu(umkm_id: UUID, menu: schemas.MenuCreate, db: Session = Depends(g
     return menu_repo.save(db=db, umkm_id=umkm_id, menu=menu)
 
 @router.get("/umkm/{umkm_id}", response_model=List[schemas.MenuResponse])
-def get_menus_by_umkm(umkm_id: UUID, db: Session = Depends(get_db)):
+def get_menus_by_umkm(umkm_id: UUID, request: Request, db: Session = Depends(get_db)):
     menus = menu_repo.get_by_umkm(db=db, umkm_id=umkm_id)
+    
+    # Ambil base URL secara dinamis dan tangani HTTPS di balik proxy (seperti Railway)
+    base_url = str(request.base_url)
+    if request.headers.get("x-forwarded-proto") == "https":
+        base_url = base_url.replace("http://", "https://")
+        
     result = []
     for m in menus:
         rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if getattr(m, 'ulasan', None) else 0.0
+        foto_valid = format_foto_url(m.foto_url, base_url)
         result.append(schemas.MenuResponse(
             **m.__dict__, 
             nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
             lokasi_toko=m.umkm.lokasi_toko if getattr(m, 'umkm', None) else None,
+            foto_url=foto_valid,
             rating_rata_rata=round(rating_avg, 1), 
             jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
         ))
     return result
 
 @router.get("/{menu_id}", response_model=schemas.MenuResponse)
-def get_menu(menu_id: UUID, db: Session = Depends(get_db)):
+def get_menu(menu_id: UUID, request: Request, db: Session = Depends(get_db)):
     m = menu_repo.find_by_id(db=db, menu_id=menu_id)
     if not m:
         raise HTTPException(status_code=404, detail="Menu tidak ditemukan")
     
+    # Ambil base URL secara dinamis dan tangani HTTPS di balik proxy (seperti Railway)
+    base_url = str(request.base_url)
+    if request.headers.get("x-forwarded-proto") == "https":
+        base_url = base_url.replace("http://", "https://")
+        
     rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if getattr(m, 'ulasan', None) else 0.0
+    foto_valid = format_foto_url(m.foto_url, base_url)
     return schemas.MenuResponse(
         **m.__dict__, 
         nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
         lokasi_toko=m.umkm.lokasi_toko if getattr(m, 'umkm', None) else None,
+        foto_url=foto_valid,
         rating_rata_rata=round(rating_avg, 1), 
         jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
     )
@@ -51,19 +72,16 @@ def get_menu(menu_id: UUID, db: Session = Depends(get_db)):
 @router.get("/", response_model=List[schemas.MenuResponse])
 def get_all_menus(request: Request, db: Session = Depends(get_db)): 
     menus = menu_repo.get_all_menus(db)
-    result = []
     
-    # Ambil base URL secara dinamis
+    # Ambil base URL secara dinamis dan tangani HTTPS di balik proxy (seperti Railway)
     base_url = str(request.base_url) 
-    
+    if request.headers.get("x-forwarded-proto") == "https":
+        base_url = base_url.replace("http://", "https://")
+        
+    result = []
     for m in menus:
         rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if getattr(m, 'ulasan', None) else 0.0
-        
-        foto_valid = m.foto_url
-        # --- PERBAIKAN: Jangan menambahkan base_url jika foto_url merupakan Base64 string (diawali 'data:') ---
-        if foto_valid and not foto_valid.startswith("http") and not foto_valid.startswith("data:"):
-            clean_path = foto_valid.lstrip('/')
-            foto_valid = f"{base_url}{clean_path}"
+        foto_valid = format_foto_url(m.foto_url, base_url)
         
         result.append(schemas.MenuResponse(
             id_menu=m.id_menu,

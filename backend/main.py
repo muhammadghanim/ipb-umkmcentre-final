@@ -38,8 +38,18 @@ origins = [
     "http://localhost:5173",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
-    "https://adskelompok3-ipb-umkm-centre.vercel.app"  # Daftarkan domain production secara eksplisit
 ]
+
+# Baca dari environment variable ALLOWED_ORIGINS jika dikonfigurasi di Railway/Server
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
+if allowed_origins_env:
+    for origin in allowed_origins_env.split(","):
+        clean_origin = origin.strip()
+        if clean_origin and clean_origin not in origins:
+            origins.append(clean_origin)
+else:
+    # Default fallback production domain jika env var kosong
+    origins.append("https://adskelompok3-ipb-umkm-centre.vercel.app")
 
 app.add_middleware(
     CORSMiddleware,
