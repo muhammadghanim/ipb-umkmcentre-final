@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from uuid import UUID
-from ..domain import models, schemas
+from domain import models, schemas
 
 class MenuRepository:
     def get_all_menus(self, db: Session):

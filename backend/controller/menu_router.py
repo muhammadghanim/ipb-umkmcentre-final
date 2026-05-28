@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
-from ..domain import schemas
-from ..repository.menu_repository import MenuRepository
-from ..repository.user_repository import UserRepository
-from ..database import get_db
+from domain import schemas
+from repository.menu_repository import MenuRepository
+from repository.user_repository import UserRepository
+from database import get_db
 
 router = APIRouter(prefix="/menus", tags=["Menus"])
 menu_repo = MenuRepository()

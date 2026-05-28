@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session, joinedload
 from uuid import UUID
-from ..domain import models, schemas
-from ..repository.menu_repository import MenuRepository
-from ..repository.promo_repository import PromoRepository
+from domain import models, schemas
+from repository.menu_repository import MenuRepository
+from repository.promo_repository import PromoRepository
 
 class PesananRepository:
     def __init__(self):

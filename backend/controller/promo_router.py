@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from uuid import UUID
-from ..domain import schemas
-from ..repository.promo_repository import PromoRepository
-from ..repository.user_repository import UserRepository
-from ..database import get_db
+from domain import schemas
+from repository.promo_repository import PromoRepository
+from repository.user_repository import UserRepository
+from database import get_db
 
 router = APIRouter(prefix="/promo", tags=["Promo"])
 promo_repo = PromoRepository()
@@ -34,7 +34,7 @@ def validasi_promo(kode_promo: str, id_umkm: UUID, db: Session = Depends(get_db)
 
 @router.get("/umkm/{umkm_id}", response_model=list[schemas.PromoResponse])
 def get_promo_umkm(umkm_id: UUID, db: Session = Depends(get_db)):
-    from ..domain import models
+    from domain import models
     return db.query(models.Promo).filter(models.Promo.id_umkm == umkm_id).all()
 
 # ==========================================
