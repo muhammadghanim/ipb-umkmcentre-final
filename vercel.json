@@ -4,5 +4,8 @@
   "framework": "vite",
   "env": {
     "VITE_API_URL": "https://ipb-umkmcentre-production.up.railway.app"
-  }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

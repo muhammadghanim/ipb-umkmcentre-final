@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingBag, Settings, LogOut, ChevronRight, Star, Ticket } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
@@ -6,6 +6,7 @@ import api from '../../services/api';
 import Footer from './Footer'; 
 
 export default function SellerLayout() {
+  const navigate = useNavigate();
   const location = useLocation();
   const [storeName, setStoreName] = useState("Loading...");
   const UMKM_ID = localStorage.getItem('UMKM_ID');
@@ -62,7 +63,7 @@ export default function SellerLayout() {
         </nav>
 
         <div className="p-6 border-t border-gray-100">
-          <button onClick={() => { localStorage.clear(); window.location.href = '/login'; }} className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl w-full transition-all font-medium text-sm">
+          <button onClick={() => { localStorage.clear(); navigate('/login'); }} className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl w-full transition-all font-medium text-sm">
             <LogOut className="w-5 h-5" /> Logout
           </button>
         </div>
