@@ -6,5 +6,5 @@ psycopg2-binary
 pydantic
 python-dotenv
 gunicorn
-passlib[bcrypt]
+bcrypt
 pyjwt
