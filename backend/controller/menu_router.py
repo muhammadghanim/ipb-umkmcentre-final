@@ -37,11 +37,15 @@ def get_menus_by_umkm(umkm_id: UUID, request: Request, db: Session = Depends(get
     for m in menus:
         rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if getattr(m, 'ulasan', None) else 0.0
         foto_valid = format_foto_url(m.foto_url, base_url)
+        
+        # Buat copy dari dict agar foto_url bisa ditimpa dengan aman
+        menu_data = {**m.__dict__}
+        menu_data['foto_url'] = foto_valid
+        
         result.append(schemas.MenuResponse(
-            **m.__dict__, 
+            **menu_data, 
             nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
             lokasi_toko=m.umkm.lokasi_toko if getattr(m, 'umkm', None) else None,
-            foto_url=foto_valid,
             rating_rata_rata=round(rating_avg, 1), 
             jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
         ))
@@ -60,11 +64,15 @@ def get_menu(menu_id: UUID, request: Request, db: Session = Depends(get_db)):
         
     rating_avg = sum(u.rating for u in m.ulasan) / len(m.ulasan) if getattr(m, 'ulasan', None) else 0.0
     foto_valid = format_foto_url(m.foto_url, base_url)
+    
+    # Buat copy dari dict agar foto_url bisa ditimpa dengan aman
+    menu_data = {**m.__dict__}
+    menu_data['foto_url'] = foto_valid
+    
     return schemas.MenuResponse(
-        **m.__dict__, 
+        **menu_data, 
         nama_toko=m.umkm.nama_toko if getattr(m, 'umkm', None) else "Kantin Kampus",
         lokasi_toko=m.umkm.lokasi_toko if getattr(m, 'umkm', None) else None,
-        foto_url=foto_valid,
         rating_rata_rata=round(rating_avg, 1), 
         jumlah_ulasan=len(m.ulasan) if getattr(m, 'ulasan', None) else 0
     )
